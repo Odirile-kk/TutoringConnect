@@ -109,7 +109,7 @@ Do not install dependencies in the project root unless the project specifically 
 
 ## 4. Set up the environment file
 
-Create a file named `.env` inside the `server` folder.
+Create a file named `.env` inside the `server` folder by copying `server/.env.example`, then update its values as needed.
 
 Example content:
 
