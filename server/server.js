@@ -2,7 +2,7 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import { PORT } from "./config.js";
+import { MONGODB_URI, PORT } from "./config.js";
 import authRoutes from "./routes/auth.js";
 import profileRoutes from "./routes/profile.js";
 import subjectRoutes from "./routes/subjects.js";
@@ -28,8 +28,15 @@ app.use("/api/ratings", ratingRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/admin", adminRoutes);
 
+if (!MONGODB_URI) {
+  console.error(
+    "MongoDB connection failed: MONGODB_URI is not set. Create server/.env using server/.env.example and set the connection string."
+  );
+  process.exit(1);
+}
+
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(MONGODB_URI)
   .then(() => {
     console.log("MongoDB connected.");
     app.listen(PORT, () => console.log(`API running on port ${PORT}`));

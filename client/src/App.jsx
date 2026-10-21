@@ -1,3 +1,4 @@
+
 // Main application shell for Tutoring Connect.
 //
 // Handles:
@@ -14,12 +15,16 @@
 
 import React, { useEffect, useState } from "react";
 
+
 import AdminArea from "./components/AdminArea.jsx";
 import Auth from "./components/Auth.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import Profile from "./components/Profile.jsx";
 import StudentArea from "./components/StudentArea.jsx";
 import TutorArea from "./components/TutorArea.jsx";
+import TutorManagement from "./components/Tutormanagement.jsx";
+
+import "./Style.css";
 
 import { api } from "./api.js";
 

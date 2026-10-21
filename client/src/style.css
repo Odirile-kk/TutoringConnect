@@ -223,9 +223,256 @@ label {
   margin-top: 0;
   color: var(--primary);
 }
-.auth form {
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 260px;
   display: flex;
   flex-direction: column;
+}
+
+/* ==========================================
+   SIDEBAR
+========================================== */
+
+.sidebar {
+  width: 260px;
+  height: 100vh;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  background: #142d4e;
+  color: #ffffff;
+
+  display: flex;
+  flex-direction: column;
+
+  z-index: 1000;
+
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Branding */
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 30px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brand-icon {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #ff8c42;
+  color: white;
+
+  font-size: 19px;
+  font-weight: 800;
+
+  border-radius: 12px;
+}
+
+.sidebar-brand h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: white;
+}
+
+.sidebar-brand span {
+  font-size: 13px;
+  color: #ffad70;
+  font-weight: 600;
+}
+
+/* Navigation Heading */
+
+.sidebar-section-title {
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 2px;
+  color: #91a7c1;
+
+  padding: 30px 25px 15px;
+}
+
+/* Navigation */
+
+.sidebar-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  padding: 0 12px;
+  flex: 1;
+}
+
+.sidebar-link {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 14px 16px;
+
+  background: transparent;
+  border: none;
+
+  color: #c8d6e5;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  text-align: left;
+  border-radius: 9px;
+}
+
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.sidebar-link.active {
+  background: #ff8c42;
+  color: white;
+
+  font-weight: 700;
+
+  box-shadow: 0 4px 12px rgba(255, 140, 66, 0.2);
+}
+
+.sidebar-icon {
+  width: 22px;
+  text-align: center;
+  font-size: 19px;
+}
+
+/* Logout */
+
+.sidebar-bottom {
+  padding: 18px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logout-link {
+  color: #ffb4a2;
+}
+
+.logout-link:hover {
+  background: rgba(255, 100, 100, 0.12);
+  color: #ffffff;
+}
+
+/* ==========================================
+   TOP HEADER
+========================================== */
+
+.topbar {
+  width: 100%;
+
+  background: #ffffff;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 20px 35px;
+
+  border-bottom: 1px solid #e8edf3;
+
+  min-height: 90px;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.topbar h1 {
+  font-size: 23px;
+  font-weight: 800;
+
+  color: #142d4e;
+
+  margin: 0 0 5px;
+}
+
+.topbar p {
+  font-size: 13px;
+  color: #8a94a6;
+  margin: 0;
+}
+
+/* User Information */
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-information {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.user-information strong {
+  font-size: 14px;
+  color: #142d4e;
+}
+
+.user-information span {
+  font-size: 12px;
+  color: #8a94a6;
+  text-transform: capitalize;
+}
+
+.user-avatar {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 50%;
+
+  background: #fff0e5;
+  color: #e87527;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+/* Mobile Menu Button */
+
+.menu-toggle {
+  display: none;
+
+  background: #f2f5f9;
+  border: none;
+
+  padding: 10px 13px;
+  border-radius: 8px;
+
+  font-size: 20px;
+  color: #142d4e;
 }
 
 /* ---------- Cards / rows ---------- */
@@ -281,8 +528,9 @@ tbody tr:hover td {
 .stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 15px;
 }
+
 .stats .card {
   min-width: 120px;
   display: flex;

@@ -1,0 +1,28 @@
+/* Tutoring Connect - Member 5 */
+.tutor-management{max-width:1150px;margin:28px auto;padding:28px;background:#f5f7fb;border-radius:16px;color:#182b49;font-family:Arial,sans-serif;box-sizing:border-box}
+.tutor-management *{box-sizing:border-box}
+.tutor-management-heading{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:26px;background:#142d4e;color:#fff;border-radius:12px;margin-bottom:20px}
+.tutor-management-heading small{color:#ffb76c;font-size:12px;font-weight:700;letter-spacing:1.2px}
+.tutor-management-heading h2{color:#fff;margin:10px 0 0;font-size:27px}
+.tutor-management-heading span{background:#f58220;padding:9px 14px;border-radius:20px;font-weight:bold}
+.tutor-management-tabs{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 26px}
+.tutor-management button{background:#f58220;border:0;color:white;padding:11px 17px;border-radius:7px;font-weight:600;cursor:pointer}
+.tutor-management button:hover{background:#d66c0e}
+.tutor-management-tabs button{background:#fff;color:#142d4e;border:1px solid #d6deea}
+.tutor-management-tabs button.active,.tutor-management-tabs button:hover{background:#f58220;color:#fff;border-color:#f58220}
+.tutor-management h3{font-size:22px;margin:16px 0;color:#142d4e}
+.tutor-management-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:18px 0}
+.tutor-management-grid article{background:#fff;border:1px solid #e0e6f0;border-radius:12px;padding:20px;box-shadow:0 3px 12px rgba(20,45,78,.06)}
+.tutor-management-grid h4{font-size:18px;margin:0 0 10px;color:#142d4e}
+.tutor-management-grid p{color:#52617a;line-height:1.5;overflow-wrap:anywhere}
+.tutor-management-actions{display:flex;gap:8px;flex-wrap:wrap}
+.tutor-management-actions button:last-child{background:#b42332}
+.tutor-management-form{display:flex;gap:12px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid #e0e6f0;padding:20px;border-radius:12px;margin:15px 0}
+.tutor-management-form input:not([type=checkbox]),.tutor-management-form select,.tutor-management-form textarea{min-width:170px;flex:1;padding:11px;border:1px solid #cbd5e1;border-radius:7px;font:inherit;color:#142d4e;background:white}
+.tutor-management-form textarea{min-height:100px;width:100%;resize:vertical}
+.tutor-management-stack{display:flex;flex-direction:column;align-items:stretch}
+.tutor-management-stack label{display:inline-flex;align-items:center;gap:7px;margin:6px 14px 6px 0}
+.tutor-management-error,.tutor-management-success{padding:12px 15px;border-radius:7px;margin:14px 0}
+.tutor-management-error{background:#fff0f0;color:#a51b2a;border:1px solid #f5b4bb}
+.tutor-management-success{background:#eaf7ef;color:#17683c;border:1px solid #a6d8b9}
+@media(max-width:650px){.tutor-management{margin:10px;padding:15px}.tutor-management-heading{align-items:flex-start;flex-direction:column}.tutor-management-heading h2{font-size:23px}.tutor-management-form{flex-direction:column;align-items:stretch}.tutor-management-form input:not([type=checkbox]),.tutor-management-form select{width:100%}}
