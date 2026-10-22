@@ -1,493 +1,162 @@
-// Authentication routes.
-//
-// Handles:
-// - Student registration
-// - Tutor registration
-// - Login
-// - Password hashing
-// - JWT creation
-// - Role validation
-//
-// Public registration can create:
-// - student
-// - tutor
-//
-// Public registration CANNOT create:
-// - admin
-
 import { Router } from "express";
-
 import bcrypt from "bcryptjs";
-
 import jwt from "jsonwebtoken";
-
+import mongoose from "mongoose";
+import Subject from "../models/Subject.js";
 import User from "../models/User.js";
-
-import TutorProfile from "../models/TutorProfile.js";
-
-import { JWT_SECRET } from "../config.js";
-
-
+import { protect } from "../middleware/auth.js";
 const router = Router();
-
-
-// ============================================================
-// CREATE JWT
-// ============================================================
-
-function createToken(user) {
-
-  return jwt.sign(
-
-    {
-      id:
-        user._id,
-
-      role:
-        user.role,
-    },
-
-    JWT_SECRET,
-
-    {
-      expiresIn: "8h",
-    },
-
-  );
-
-}
-
-
-// ============================================================
-// REGISTER
-// ============================================================
-
-router.post(
-  "/register",
-  async (req, res) => {
-
-    try {
-
-      const {
-        name,
-        email,
-        password,
-        role,
-      } = req.body;
-
-
-      // ======================================================
-      // REQUIRED FIELDS
-      // ======================================================
-
-      if (
-        !name ||
-        !email ||
-        !password
-      ) {
-
-        return res.status(400).json({
-
+const tokenFor = (user) =>
+  jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+    expiresIn: "7d",
+  });
+const safeUser = (user) => ({
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  phone: user.phone,
+  bio: user.bio,
+  qualifications: user.qualifications,
+  subjects: user.subjects,
+  avatar: user.avatar,
+  active: user.active,
+});
+router.post("/register", async (req, res, next) => {
+  try {
+    const {
+      name,
+      email,
+      password,
+      role = "student",
+      subjects = [],
+      qualifications = "",
+    } = req.body;
+    if (
+      !name?.trim() ||
+      !email ||
+      !/^\S+@\S+\.\S+$/.test(email) ||
+      !password ||
+      password.length < 8
+    )
+      return res
+        .status(400)
+        .json({
           message:
-            "Name, email and password are required.",
-
+            "Enter a name, valid email and password with at least 8 characters.",
         });
-
-      }
-
-
-      // ======================================================
-      // NAME VALIDATION
-      // ======================================================
-
-      const cleanName =
-        name.trim();
-
-
+    if (!["student", "tutor"].includes(role))
+      return res
+        .status(400)
+        .json({ message: "Choose either a student or tutor account." });
+    if (!Array.isArray(subjects))
+      return res.status(400).json({ message: "Choose valid tutor subjects." });
+    let tutorSubjects = [];
+    if (role === "tutor") {
+      const uniqueSubjects = [...new Set(subjects)];
       if (
-        cleanName.length < 2
-      ) {
-
-        return res.status(400).json({
-
-          message:
-            "Please enter a valid full name.",
-
-        });
-
-      }
-
-
-      // ======================================================
-      // EMAIL VALIDATION
-      // ======================================================
-
-      const cleanEmail =
-        email.trim().toLowerCase();
-
-
-      const emailRegex =
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-
-      if (
-        !emailRegex.test(
-          cleanEmail
+        !uniqueSubjects.length ||
+        uniqueSubjects.some(
+          (subjectId) =>
+            typeof subjectId !== "string" ||
+            !mongoose.isValidObjectId(subjectId),
         )
-      ) {
-
-        return res.status(400).json({
-
-          message:
-            "Please enter a valid email address.",
-
-        });
-
-      }
-
-
-      // ======================================================
-      // PASSWORD VALIDATION
-      // ======================================================
-
-      if (
-        password.length < 8
-      ) {
-
-        return res.status(400).json({
-
-          message:
-            "Password must contain at least 8 characters.",
-
-        });
-
-      }
-
-
-      // ======================================================
-      // ADMIN REGISTRATION
-      // ======================================================
-      //
-      // Users cannot register themselves as administrators.
-      //
-      // Admin accounts must be created by an existing
-      // administrator or directly in the database.
-
-      if (
-        role === "admin"
-      ) {
-
-        return res.status(403).json({
-
-          message:
-            "Administrator accounts cannot be created through public registration.",
-
-        });
-
-      }
-
-
-      // ======================================================
-      // VALIDATE ROLE
-      // ======================================================
-
-      const selectedRole =
-        role === "tutor"
-          ? "tutor"
-          : "student";
-
-
-      // ======================================================
-      // CHECK DUPLICATE EMAIL
-      // ======================================================
-
-      const existingUser =
-        await User.findOne({
-          email:
-            cleanEmail,
-        });
-
-
-      if (existingUser) {
-
-        return res.status(409).json({
-
-          message:
-            "An account with this email already exists.",
-
-        });
-
-      }
-
-
-      // ======================================================
-      // HASH PASSWORD
-      // ======================================================
-
-      const hashedPassword =
-        await bcrypt.hash(
-          password,
-          12,
-        );
-
-
-      // ======================================================
-      // CREATE USER
-      // ======================================================
-
-      const user =
-        await User.create({
-
-          name:
-            cleanName,
-
-          email:
-            cleanEmail,
-
-          password:
-            hashedPassword,
-
-          role:
-            selectedRole,
-
-        });
-
-
-      // ======================================================
-      // CREATE TUTOR PROFILE
-      // ======================================================
-
-      if (
-        user.role === "tutor"
-      ) {
-
-        await TutorProfile.create({
-
-          user:
-            user._id,
-
-          subjects:
-            [],
-
-        });
-
-      }
-
-
-      // ======================================================
-      // CREATE JWT
-      // ======================================================
-
-      const token =
-        createToken(user);
-
-
-      // ======================================================
-      // RESPONSE
-      // ======================================================
-
-      return res.status(201).json({
-
-        message:
-          "Registration successful.",
-
-        token,
-
-        user: {
-
-          id:
-            user._id,
-
-          name:
-            user.name,
-
-          email:
-            user.email,
-
-          role:
-            user.role,
-
-        },
-
-      });
-
-
-    } catch (error) {
-
-      console.error(
-        "Registration error:",
-        error,
-      );
-
-
-      return res.status(500).json({
-
-        message:
-          "Unable to register right now.",
-
-      });
-
+      )
+        return res
+          .status(400)
+          .json({ message: "Tutors must select at least one valid subject." });
+      tutorSubjects = await Subject.find({
+        _id: { $in: uniqueSubjects },
+        active: true,
+      }).distinct("_id");
+      if (tutorSubjects.length !== uniqueSubjects.length)
+        return res
+          .status(400)
+          .json({ message: "One or more selected subjects are unavailable." });
+    } else if (subjects.length) {
+      return res
+        .status(400)
+        .json({ message: "Student accounts cannot be assigned tutor subjects." });
     }
-
-  },
+    if (await User.exists({ email: email.toLowerCase() }))
+      return res
+        .status(409)
+        .json({ message: "An account with this email already exists." });
+    const user = await User.create({
+      name: name.trim(),
+      email,
+      password: await bcrypt.hash(password, 12),
+      role,
+      subjects: tutorSubjects,
+      qualifications:
+        role === "tutor" ? String(qualifications).trim().slice(0, 1000) : "",
+    });
+    res.status(201).json({ token: tokenFor(user), user: safeUser(user) });
+  } catch (e) {
+    next(e);
+  }
+});
+router.post("/login", async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({
+      email: String(email || "").toLowerCase(),
+    }).select("+password");
+    if (
+      !user ||
+      !user.active ||
+      !(await bcrypt.compare(password || "", user.password))
+    )
+      return res
+        .status(401)
+        .json({ message: "Email or password is incorrect." });
+    res.json({ token: tokenFor(user), user: safeUser(user) });
+  } catch (e) {
+    next(e);
+  }
+});
+router.get("/me", protect, (req, res) =>
+  res.json({ user: safeUser(req.user) }),
 );
-
-
-// ============================================================
-// LOGIN
-// ============================================================
-
-router.post(
-  "/login",
-  async (req, res) => {
-
-    try {
-
-      const {
-        email,
-        password,
-      } = req.body;
-
-
-      // ======================================================
-      // REQUIRED FIELDS
-      // ======================================================
-
+router.put("/me", protect, async (req, res, next) => {
+  try {
+    const { name, phone, bio, qualifications, subjects } = req.body;
+    if (!name?.trim())
+      return res.status(400).json({ message: "Name is required." });
+    if (subjects !== undefined && req.user.role !== "tutor")
+      return res
+        .status(400)
+        .json({ message: "Only tutor accounts can choose teaching subjects." });
+    if (req.user.role === "tutor" && subjects !== undefined) {
       if (
-        !email ||
-        !password
-      ) {
-
-        return res.status(400).json({
-
-          message:
-            "Email and password are required.",
-
-        });
-
-      }
-
-
-      // ======================================================
-      // CLEAN EMAIL
-      // ======================================================
-
-      const cleanEmail =
-        email.trim().toLowerCase();
-
-
-      // ======================================================
-      // FIND USER
-      // ======================================================
-
-      const user =
-        await User.findOne({
-
-          email:
-            cleanEmail,
-
-        });
-
-
-      // ======================================================
-      // INVALID LOGIN
-      // ======================================================
-
-      if (!user) {
-
-        return res.status(401).json({
-
-          message:
-            "Invalid email or password.",
-
-        });
-
-      }
-
-
-      // ======================================================
-      // CHECK PASSWORD
-      // ======================================================
-
-      const passwordCorrect =
-        await bcrypt.compare(
-
-          password,
-
-          user.password,
-
-        );
-
-
-      if (!passwordCorrect) {
-
-        return res.status(401).json({
-
-          message:
-            "Invalid email or password.",
-
-        });
-
-      }
-
-
-      // ======================================================
-      // CREATE JWT
-      // ======================================================
-
-      const token =
-        createToken(user);
-
-
-      // ======================================================
-      // RESPONSE
-      // ======================================================
-
-      return res.json({
-
-        message:
-          "Login successful.",
-
-        token,
-
-        user: {
-
-          id:
-            user._id,
-
-          name:
-            user.name,
-
-          email:
-            user.email,
-
-          role:
-            user.role,
-
-        },
-
-      });
-
-
-    } catch (error) {
-
-      console.error(
-        "Login error:",
-        error,
-      );
-
-
-      return res.status(500).json({
-
-        message:
-          "Unable to log in right now.",
-
-      });
-
+        !Array.isArray(subjects) ||
+        subjects.some(
+          (subjectId) =>
+            typeof subjectId !== "string" ||
+            !mongoose.isValidObjectId(subjectId),
+        )
+      )
+        return res.status(400).json({ message: "Choose valid tutor subjects." });
+      const uniqueSubjects = [...new Set(subjects)];
+      const activeSubjects = await Subject.find({
+        _id: { $in: uniqueSubjects },
+        active: true,
+      }).distinct("_id");
+      if (activeSubjects.length !== uniqueSubjects.length)
+        return res
+          .status(400)
+          .json({ message: "One or more selected subjects are unavailable." });
+      req.user.subjects = activeSubjects;
     }
-
-  },
-);
-
-
+    req.user.name = name.trim();
+    req.user.phone = String(phone || "").slice(0, 30);
+    req.user.bio = String(bio || "").slice(0, 1000);
+    if (req.user.role === "tutor")
+      req.user.qualifications = String(qualifications || "").slice(0, 1000);
+    await req.user.save();
+    res.json({ user: safeUser(req.user) });
+  } catch (e) {
+    next(e);
+  }
+});
 export default router;

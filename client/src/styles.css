@@ -1,0 +1,8 @@
+@import "./styles/base.css";
+@import "./styles/public.css";
+@import "./styles/auth.css";
+@import "./styles/shell.css";
+@import "./styles/shared.css";
+@import "./styles/student.css";
+@import "./styles/admin.css";
+@import "./styles/responsive.css";

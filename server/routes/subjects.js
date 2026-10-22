@@ -1,35 +1,52 @@
-// Manages the list of tutoring subjects, including admin-only creation and updates.
 import { Router } from "express";
 import Subject from "../models/Subject.js";
-import { authenticate, role } from "../middleware/auth.js";
-
-const router = Router();
-router.use(authenticate);
-
-router.get("/", async (req, res) => {
-  res.json(await Subject.find().sort({ name: 1 }));
+import { protect, allow } from "../middleware/auth.js";
+const r = Router();
+r.get("/", async (req, res) => {
+  const q = String(req.query.search || "");
+  res.json(
+    await Subject.find({
+      active: true,
+      ...(q ? { name: { $regex: q, $options: "i" } } : {}),
+    }).sort({ name: 1 }),
+  );
 });
-
-router.post("/", role("admin"), async (req, res) => {
+r.post("/", protect, allow("admin"), async (req, res, next) => {
   try {
-    res.status(201).json(
-      await Subject.create({
-        name: req.body.name,
-        description: req.body.description || "",
-      }),
-    );
-  } catch (error) {
-    res.status(400).json({ message: error.message });
+    const s = await Subject.create({
+      name: req.body.name,
+      description: req.body.description,
+      category: req.body.category,
+    });
+    res.status(201).json(s);
+  } catch (e) {
+    next(e);
   }
 });
-
-router.put("/:id", role("admin"), async (req, res) => {
-  res.json(await Subject.findByIdAndUpdate(req.params.id, req.body, { new: true }));
+r.put("/:id", protect, allow("admin"), async (req, res, next) => {
+  try {
+    const s = await Subject.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: req.body.name,
+        description: req.body.description,
+        category: req.body.category,
+      },
+      { new: true, runValidators: true },
+    );
+    if (!s) return res.status(404).json({ message: "Subject not found." });
+    res.json(s);
+  } catch (e) {
+    next(e);
+  }
 });
-
-router.delete("/:id", role("admin"), async (req, res) => {
-  await Subject.findByIdAndDelete(req.params.id);
-  res.json({ message: "Subject deleted." });
+r.delete("/:id", protect, allow("admin"), async (req, res) => {
+  const s = await Subject.findByIdAndUpdate(
+    req.params.id,
+    { active: false },
+    { new: true },
+  );
+  if (!s) return res.status(404).json({ message: "Subject not found." });
+  res.json({ message: "Subject archived." });
 });
-
-export default router;
+export default r;

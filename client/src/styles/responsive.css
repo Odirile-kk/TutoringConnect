@@ -1,0 +1,448 @@
+@media (max-width: 1000px) {
+  .hero {
+    gap: 25px;
+  }
+  .hero h1 {
+    font-size: 53px;
+  }
+  .hero-visual {
+    transform: scale(0.92);
+  }
+  .note-left {
+    left: -15px;
+  }
+  .note-right {
+    right: -10px;
+  }
+  .subject-grid,
+  .tutor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .secondary-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .action-stat {
+    grid-column: span 1;
+  }
+  .staff-content {
+    padding-left: 27px;
+    padding-right: 27px;
+  }
+  .side-nav {
+    width: 220px;
+  }
+  .staff-content {
+    margin-left: 220px;
+  }
+}
+@media (max-width: 760px) {
+  .wrap {
+    width: calc(100% - 36px);
+  }
+  .topbar {
+    height: 72px;
+  }
+  .topbar nav {
+    gap: 14px;
+  }
+  .topbar nav > a:not(.btn) {
+    display: none;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    padding-top: 60px;
+    gap: 5px;
+  }
+  .hero h1 {
+    font-size: clamp(44px, 10vw, 60px);
+    letter-spacing: -2.5px;
+  }
+  .hero-lede {
+    font-size: 14px;
+  }
+  .hero-visual {
+    min-height: 390px;
+    transform: scale(0.94);
+    margin-top: 0;
+  }
+  .trust-strip {
+    flex-wrap: wrap;
+    gap: 17px;
+    justify-content: flex-start;
+  }
+  .trust-strip > span {
+    width: 100%;
+  }
+  .trust-strip div {
+    font-size: 11px;
+  }
+  .section {
+    padding-top: 70px;
+    padding-bottom: 72px;
+  }
+  .section-heading h2 {
+    font-size: 30px;
+  }
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 13px;
+    margin-top: 30px;
+  }
+  .feature-card {
+    padding: 21px;
+  }
+  .feature-card h3 {
+    margin-top: 17px;
+  }
+  .feature-card p {
+    min-height: 0;
+  }
+  .feature-rule {
+    margin-top: 18px;
+  }
+  .cta-inner {
+    padding-top: 39px;
+    padding-bottom: 39px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .cta-inner h2 {
+    font-size: 26px;
+  }
+  .cta-decoration {
+    right: 10px;
+    top: 0;
+  }
+  .footer {
+    padding: 20px 0;
+    flex-wrap: wrap;
+  }
+  .footer > span {
+    order: 3;
+    width: 100%;
+  }
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+  .auth-side {
+    display: none;
+  }
+  .auth-main {
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .auth-form-wrap {
+    padding: 45px 0;
+  }
+  .app-topbar {
+    height: 66px;
+    padding: 0 17px;
+    gap: 12px;
+  }
+  .app-topbar .brand {
+    font-size: 15px;
+  }
+  .app-topbar .brand-icon {
+    width: 31px;
+    height: 31px;
+  }
+  .student-top-nav {
+    display: none;
+  }
+  .mobile-menu {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 32px;
+  }
+  .account-menu {
+    gap: 6px;
+  }
+  .account-name {
+    display: none;
+  }
+  .role-pill {
+    display: none;
+  }
+  .side-nav {
+    top: 66px;
+    transform: translateX(-100%);
+    transition: transform 0.2s;
+    width: 250px;
+    box-shadow: none;
+  }
+  .side-nav.side-open {
+    transform: translateX(0);
+    box-shadow: 10px 0 30px #1b31531a;
+  }
+  .mobile-drawer {
+    position: fixed;
+    display: grid;
+    gap: 4px;
+    top: 66px;
+    left: 0;
+    right: 0;
+    z-index: 25;
+    background: #fff;
+    padding: 13px 18px 18px;
+    box-shadow: 0 15px 25px #182a4b14;
+  }
+  .mobile-drawer a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 9px;
+    color: #65748d;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .mobile-drawer a:hover {
+    background: #edf2ff;
+    color: var(--blue);
+  }
+  .app-content {
+    width: calc(100% - 32px);
+    padding: 27px 0 50px;
+  }
+  .staff-content {
+    margin-left: 0;
+    padding: 27px 16px 50px;
+    width: 100%;
+  }
+  .page-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 22px;
+  }
+  .page-head h1 {
+    font-size: 26px;
+  }
+  .page-head .btn {
+    align-self: flex-start;
+  }
+  .welcome-banner,
+  .admin-welcome {
+    padding: 22px;
+    align-items: flex-start;
+  }
+  .welcome-banner h2 {
+    font-size: 19px;
+    max-width: 310px;
+  }
+  .banner-art {
+    width: 75px;
+    height: 75px;
+    border-radius: 20px;
+  }
+  .banner-art svg {
+    width: 38px;
+  }
+  .admin-welcome-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+  }
+  .admin-welcome-icon svg {
+    width: 30px;
+  }
+  .admin-welcome h2 {
+    font-size: 17px;
+  }
+  .quick-grid {
+    grid-template-columns: 1fr;
+  }
+  .subject-grid,
+  .tutor-grid {
+    grid-template-columns: 1fr;
+  }
+  .subject-card {
+    min-height: 190px;
+  }
+  .tutor-card {
+    padding: 19px;
+  }
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+  .profile-summary {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    grid-template-rows: auto auto auto;
+    text-align: left;
+    column-gap: 15px;
+    align-items: center;
+  }
+  .profile-summary .profile-avatar {
+    grid-row: 1/4;
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    margin: 0;
+  }
+  .profile-summary h3 {
+    align-self: end;
+  }
+  .profile-summary > p {
+    margin: 3px 0;
+  }
+  .profile-summary .role-pill {
+    display: none;
+  }
+  .profile-summary-line {
+    grid-column: 2;
+    justify-content: flex-start;
+    border-top: 0;
+    padding-top: 0;
+    margin-top: 4px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .span-two {
+    grid-column: auto;
+  }
+  .slot-grid {
+    grid-template-columns: 1fr;
+  }
+  .platform-rating-card {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 20px;
+  }
+  .platform-rating-summary {
+    border-right: 0;
+    border-bottom: 1px solid #e6ebf4;
+    padding: 0 0 14px;
+  }
+  .booking-card {
+    gap: 10px;
+    padding: 11px;
+  }
+  .booking-date {
+    width: 43px;
+    height: 48px;
+  }
+  .booking-info > b {
+    font-size: 11px;
+  }
+  .booking-right > span {
+    display: none;
+  }
+  .booking-right {
+    gap: 3px;
+  }
+  .booking-actions {
+    gap: 0;
+  }
+  .stats-grid,
+  .secondary-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 14px;
+  }
+  .stat-value {
+    font-size: 25px;
+  }
+  .stat-label {
+    font-size: 9px;
+  }
+  .stat-detail {
+    font-size: 8px;
+  }
+  .action-stat {
+    grid-column: span 2;
+  }
+  .table-tools {
+    align-items: stretch;
+  }
+  .table-tools > select {
+    max-width: 120px;
+  }
+  .profile-hero {
+    padding: 20px;
+    gap: 14px;
+  }
+  .profile-hero .profile-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 17px;
+  }
+  .profile-hero h1 {
+    font-size: 22px;
+  }
+  .profile-hero p {
+    font-size: 11px;
+  }
+  .profile-hero .tutor-subjects {
+    margin-bottom: 0;
+  }
+  .section-row {
+    align-items: flex-start;
+  }
+  .section-row h2 {
+    font-size: 15px;
+  }
+  .search-bar {
+    height: 45px;
+  }
+  .search-bar > span {
+    display: none;
+  }
+  .today-chip {
+    font-size: 9px;
+  }
+  .panel {
+    padding: 13px;
+  }
+  .modal {
+    padding: 23px;
+  }
+  .filter-tabs button {
+    padding: 11px 10px;
+    font-size: 10px;
+  }
+}
+@media (max-width: 400px) {
+  .hero h1 {
+    font-size: 42px;
+  }
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hero-actions .btn {
+    width: 100%;
+  }
+  .hero-visual {
+    transform: scale(0.82);
+    margin-left: -15px;
+    margin-right: -15px;
+  }
+  .topbar nav .btn {
+    padding: 9px 10px;
+    font-size: 10px;
+  }
+  .topbar .brand {
+    font-size: 16px;
+  }
+  .page-head h1 {
+    font-size: 23px;
+  }
+  .welcome-banner .banner-art {
+    display: none;
+  }
+  .account-menu .icon-btn {
+    width: 29px;
+  }
+  .stats-grid,
+  .secondary-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}

@@ -1,0 +1,244 @@
+.hero-lede {
+  font-size: 15px;
+  line-height: 1.9;
+  color: #6d7b94;
+  max-width: 485px;
+  margin: 0;
+}
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 29px;
+}
+.hero-proof {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 35px;
+}
+.hero-proof small {
+  display: block;
+  color: #8894a8;
+  font-size: 10px;
+  margin-top: 4px;
+}
+.hero-visual {
+  position: relative;
+  min-height: 430px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.form-stack {
+  display: grid;
+  gap: 17px;
+}
+.form-stack label {
+  display: grid;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #354765;
+}
+.form-stack input, .form-stack select, .form-stack textarea {
+  width: 100%;
+  border: 1px solid #dfe5ef;
+  border-radius: 10px;
+  padding: 12px 13px;
+  color: #233653;
+  background: #fff;
+  outline: none;
+  font-size: 12px;
+  transition:
+    border 0.15s,
+    box-shadow 0.15s;
+}
+.form-stack input:focus, .form-stack select:focus, .form-stack textarea:focus {
+  border-color: #8da7f0;
+  box-shadow: 0 0 0 3px #2858d812;
+}
+.form-stack input:disabled {
+  background: #f4f6fa;
+  color: #8b97a9;
+}
+.form-stack textarea {
+  resize: vertical;
+}
+.form-stack > .btn {
+  width: 100%;
+  margin-top: 5px;
+  padding: 14px;
+}
+.alert, .success-alert {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff0ef;
+  color: #b43c43;
+  border: 1px solid #f6d3d1;
+  font-size: 12px;
+  margin: 12px 0;
+}
+.success-alert {
+  background: #edf9f3;
+  color: #247f5b;
+  border-color: #c8eedc;
+}
+.success-alert a {
+  font-weight: 800;
+  text-decoration: underline;
+  margin-left: 5px;
+}
+.panel {
+  background: #fff;
+  border: 1px solid #e6ebf4;
+  border-radius: 15px;
+  padding: 21px;
+}
+.tutor-rating-summary,
+.review-rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #d99b25;
+  font-size: 11px;
+}
+.tutor-rating-summary span {
+  color: #8490a4;
+}
+.profile-rating-summary {
+  margin-top: 13px;
+}
+.tutor-reviews {
+  margin-top: 18px;
+}
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+.review-card,
+.booking-rating,
+.platform-rating-card {
+  border: 1px solid #e6ebf4;
+  border-radius: 14px;
+  background: #fff;
+}
+.review-card {
+  padding: 16px;
+}
+.review-card p,
+.submitted-rating p {
+  color: #66758d;
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 10px 0;
+}
+.review-card small {
+  color: #929daf;
+  font-size: 10px;
+}
+.booking-review-wrap {
+  overflow: hidden;
+  border: 1px solid #e6ebf4;
+  border-radius: 14px;
+  background: #fff;
+}
+.booking-review-wrap .booking-card {
+  border: 0;
+  border-radius: 0;
+}
+.booking-rating {
+  margin: 0 15px 15px;
+  padding: 16px;
+}
+.booking-rating h3,
+.platform-rating-form h2 {
+  color: #263957;
+  font: 700 14px Manrope;
+  margin: 0 0 12px;
+}
+.rating-form {
+  display: grid;
+  gap: 12px;
+}
+.rating-form label {
+  display: grid;
+  gap: 7px;
+  color: #354765;
+  font-size: 11px;
+  font-weight: 700;
+}
+.rating-form textarea {
+  resize: vertical;
+  min-height: 70px;
+  border: 1px solid #dfe5ef;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #233653;
+  font: inherit;
+}
+.rating-stars {
+  display: flex;
+  gap: 5px;
+}
+.rating-star {
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  color: #c7ced9;
+  cursor: pointer;
+}
+.rating-star.selected {
+  color: #e2a52b;
+}
+.rating-star.selected svg {
+  fill: currentColor;
+}
+.rating-form > .btn {
+  justify-self: start;
+}
+.rating-form > .btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.submitted-rating span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #c58a2d;
+  font-size: 12px;
+  font-weight: 700;
+}
+.platform-rating-card {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.7fr) minmax(300px, 1.3fr);
+  gap: 28px;
+  padding: 26px;
+}
+.platform-rating-summary {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid #e6ebf4;
+  padding-right: 20px;
+}
+.platform-rating-summary p {
+  color: #8490a4;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.platform-rating-score {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #d99b25;
+}
+.platform-rating-score strong {
+  color: #263957;
+  font: 800 34px Manrope;
+}
+.platform-rating-form {
+  min-width: 0;
+}

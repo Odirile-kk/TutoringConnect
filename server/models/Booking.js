@@ -1,7 +1,5 @@
-// Connects Student, Tutor, Subject and Availability.
-// Session type is deliberately restricted to Microsoft Teams.
 import mongoose from "mongoose";
-
+import { randomUUID } from "node:crypto";
 const schema = new mongoose.Schema(
   {
     student: {
@@ -24,21 +22,22 @@ const schema = new mongoose.Schema(
       ref: "Availability",
       required: true,
     },
-    date: { type: String, required: true },
+    date: { type: Date, required: true },
     startTime: { type: String, required: true },
     endTime: { type: String, required: true },
-    sessionType: {
+    meetingLink: {
       type: String,
-      enum: ["Microsoft Teams"],
-      default: "Microsoft Teams",
+      default: () =>
+        `https://teams.microsoft.com/l/meetup-join/demo-${randomUUID()}`,
     },
     status: {
       type: String,
-      enum: ["Pending", "Confirmed", "Cancelled", "Completed"],
-      default: "Pending",
+      enum: ["confirmed", "completed", "cancelled"],
+      default: "confirmed",
     },
+    notes: { type: String, default: "" },
   },
   { timestamps: true },
 );
-
+schema.index({ availability: 1, status: 1 });
 export default mongoose.model("Booking", schema);

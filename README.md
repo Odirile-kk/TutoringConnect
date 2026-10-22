@@ -115,8 +115,9 @@ Example content:
 
 ```env
 MONGODB_URI=mongodb://127.0.0.1:27017/tutoring_connect
-PORT=5001
+PORT=5002
 JWT_SECRET=your-strong-secret-key
+CLIENT_URL=http://localhost:5174
 ```
 
 ### If using MongoDB Atlas
@@ -124,8 +125,9 @@ Use a connection string like this instead:
 
 ```env
 MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@cluster.mongodb.net/tutoring_connect
-PORT=5001
+PORT=5002
 JWT_SECRET=your-strong-secret-key
+CLIENT_URL=http://localhost:5174
 ```
 
 Important:
@@ -147,7 +149,7 @@ npm run dev
 You should see output showing the server started and MongoDB connected.
 
 The API should run on:
-- http://localhost:5001
+- http://localhost:5002
 
 ---
 
@@ -161,7 +163,7 @@ npm run dev
 ```
 
 Then open the app in the browser:
-- http://localhost:5173
+- http://localhost:5174
 
 ---
 
@@ -171,7 +173,7 @@ Then open the app in the browser:
 Open this URL in your browser:
 
 ```text
-http://localhost:5001/api/health
+http://localhost:5002/api/health
 ```
 
 The response should be JSON indicating the API is running.
@@ -180,7 +182,7 @@ The response should be JSON indicating the API is running.
 Open:
 
 ```text
-http://localhost:5173
+http://localhost:5174
 ```
 
 If the page loads, the frontend is running correctly.
@@ -226,7 +228,7 @@ This lets you access admin features in the application.
 - If using Atlas, confirm the username, password, and cluster name are all correct.
 
 ### Port already in use
-If port 5001 or 5173 is already occupied, stop the other process or change the port in the app config and environment variables.
+If port 5002 or 5174 is already occupied, stop the other process or change the port in the app config and environment variables.
 
 ---
 
