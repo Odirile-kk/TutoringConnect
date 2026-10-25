@@ -40,14 +40,4 @@ const schema = new mongoose.Schema(
   { timestamps: true },
 );
 schema.index({ availability: 1, status: 1 });
-
-schema.index(
-  { availability: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      status: { $in: ["confirmed", "completed"] },
-    },
-  }
-);
 export default mongoose.model("Booking", schema);
