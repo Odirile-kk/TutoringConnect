@@ -42,7 +42,7 @@ app.get('/api/dashboard', protect, async (req, res) => {
   res.json({ upcoming });
 });
 app.use((err, _req, res, _next) => { console.error(err); res.status(err.status || 500).json({ message: err.message || 'Unexpected server error' }); });
-const port = process.env.PORT || 5002;
+const port = process.env.PORT || 5001;
 mongoose.connect(process.env.MONGODB_URI).then(async () => {
   await seedSubjectCatalog();
   app.listen(port, () => console.log(`API listening on ${port}`));
