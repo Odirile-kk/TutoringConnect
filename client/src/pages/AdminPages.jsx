@@ -1,24 +1,55 @@
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, GraduationCap, Users, CalendarDays, LayoutDashboard, LogOut, Menu, X, ArrowRight, ShieldCheck, Clock, Star, Search, Plus, CheckCircle2, ChevronDown, UserRound, Settings, ChartNoAxesCombined, BookMarked, CalendarCheck, Trash2, Edit3, Filter } from "lucide-react";
+import {
+  BookOpen,
+  GraduationCap,
+  Users,
+  CalendarDays,
+  ArrowRight,
+  Clock,
+  Search,
+  Plus,
+  CalendarCheck,
+  Trash2,
+  Edit3,
+  ChartNoAxesCombined,
+} from "lucide-react";
 import { request } from "../context/AuthContext";
-import { Button, PageHead, StatCard, BookingCard, QuickAdmin, Empty, DataTable, Modal } from "../components/AppComponents";
+import {
+  Button,
+  PageHead,
+  StatCard,
+  BookingCard,
+  QuickAdmin,
+  Empty,
+  DataTable,
+  Modal,
+} from "../components/AppComponents";
 
 export function AdminDashboard() {
   const [stats, setStats] = useState({});
   const [bookings, setBookings] = useState([]);
   const [error, setError] = useState("");
+
   useEffect(() => {
     request("/dashboard")
       .then((d) => setStats(d.stats || {}))
       .catch((e) => setError(e.message));
+
     request("/bookings")
       .then(setBookings)
       .catch(() => {});
   }, []);
+
   const upcoming = bookings
-    .filter((b) => b.status !== "cancelled" && new Date(b.date) >= new Date())
+    .filter(
+      (b) =>
+        b.status !== "cancelled" &&
+        new Date(b.date) >= new Date(),
+    )
     .slice(0, 5);
+
   return (
     <>
       <PageHead
@@ -37,7 +68,9 @@ export function AdminDashboard() {
           </span>
         }
       />
+
       {error && <div className="alert">{error}</div>}
+
       <div className="admin-welcome">
         <div>
           <span className="banner-tag">ADMINISTRATOR OVERVIEW</span>
@@ -48,6 +81,7 @@ export function AdminDashboard() {
           <ChartNoAxesCombined size={44} />
         </div>
       </div>
+
       <div className="stats-grid">
         <StatCard
           label="Total students"
@@ -77,6 +111,7 @@ export function AdminDashboard() {
           detail="All time sessions"
         />
       </div>
+
       <div className="stats-grid secondary-stats">
         <StatCard
           label="Today's bookings"
@@ -96,6 +131,7 @@ export function AdminDashboard() {
           </Link>
         </div>
       </div>
+
       <div className="section-row">
         <div>
           <h2>Upcoming bookings</h2>
@@ -105,9 +141,12 @@ export function AdminDashboard() {
           Manage bookings <ArrowRight size={15} />
         </Link>
       </div>
+
       <div className="panel">
         {upcoming.length ? (
-          upcoming.map((b) => <BookingCard key={b._id} booking={b} admin />)
+          upcoming.map((b) => (
+            <BookingCard key={b._id} booking={b} admin />
+          ))
         ) : (
           <Empty
             title="No upcoming bookings"
@@ -115,12 +154,14 @@ export function AdminDashboard() {
           />
         )}
       </div>
+
       <div className="section-row">
         <div>
           <h2>Quick management</h2>
           <p>Jump straight into common admin tasks.</p>
         </div>
       </div>
+
       <div className="quick-grid">
         <QuickAdmin
           to="/admin/users"
@@ -156,15 +197,20 @@ export function AdminUsers() {
   const [q, setQ] = useState("");
   const [role, setRole] = useState("");
   const [error, setError] = useState("");
+
   const reload = () =>
     request(
-      `/users?search=${encodeURIComponent(q)}${role ? `&role=${role}` : ""}`,
+      `/users?search=${encodeURIComponent(q)}${
+        role ? `&role=${role}` : ""
+      }`,
     )
       .then(setUsers)
       .catch((e) => setError(e.message));
+
   useEffect(() => {
     reload();
   }, [q, role]);
+
   const active = async (u) => {
     try {
       await request(`/users/${u._id}/active`, {
@@ -176,6 +222,7 @@ export function AdminUsers() {
       setError(e.message);
     }
   };
+
   const changeRole = async (u, newRole) => {
     try {
       await request(`/users/${u._id}/role`, {
@@ -187,6 +234,7 @@ export function AdminUsers() {
       setError(e.message);
     }
   };
+
   return (
     <>
       <PageHead
@@ -194,6 +242,7 @@ export function AdminUsers() {
         title="Students & users"
         description="Search accounts, review roles and manage account access."
       />
+
       <div className="table-tools">
         <div className="search-bar compact">
           <Search size={17} />
@@ -203,14 +252,20 @@ export function AdminUsers() {
             placeholder="Search name or email…"
           />
         </div>
-        <select value={role} onChange={(e) => setRole(e.target.value)}>
+
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+        >
           <option value="">All roles</option>
           <option value="student">Students</option>
           <option value="tutor">Tutors</option>
           <option value="admin">Admins</option>
         </select>
       </div>
+
       {error && <div className="alert">{error}</div>}
+
       <div className="panel">
         <DataTable
           columns={[
@@ -218,7 +273,9 @@ export function AdminUsers() {
               label: "User",
               render: (u) => (
                 <div className="table-person">
-                  <span className="user-avatar">{u.name?.slice(0, 1)}</span>
+                  <span className="user-avatar">
+                    {u.name?.slice(0, 1)}
+                  </span>
                   <span>
                     <b>{u.name}</b>
                     <small>{u.email}</small>
@@ -232,7 +289,9 @@ export function AdminUsers() {
                 <select
                   className="inline-select"
                   value={u.role}
-                  onChange={(e) => changeRole(u, e.target.value)}
+                  onChange={(e) =>
+                    changeRole(u, e.target.value)
+                  }
                 >
                   <option value="student">Student</option>
                   <option value="tutor">Tutor</option>
@@ -244,7 +303,11 @@ export function AdminUsers() {
               label: "Status",
               render: (u) => (
                 <span
-                  className={`status ${u.active ? "status-confirmed" : "status-cancelled"}`}
+                  className={`status ${
+                    u.active
+                      ? "status-confirmed"
+                      : "status-cancelled"
+                  }`}
                 >
                   {u.active ? "Active" : "Inactive"}
                 </span>
@@ -252,13 +315,16 @@ export function AdminUsers() {
             },
             {
               label: "Joined",
-              render: (u) => new Date(u.createdAt).toLocaleDateString("en-ZA"),
+              render: (u) =>
+                new Date(u.createdAt).toLocaleDateString("en-ZA"),
             },
             {
               label: "Action",
               render: (u) => (
                 <button
-                  className={`btn small ${u.active ? "secondary" : "primary"}`}
+                  className={`btn small ${
+                    u.active ? "secondary" : "primary"
+                  }`}
                   onClick={() => active(u)}
                 >
                   {u.active ? "Deactivate" : "Activate"}
@@ -279,6 +345,7 @@ export function AdminTutors() {
   const [q, setQ] = useState("");
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -287,20 +354,32 @@ export function AdminTutors() {
     bio: "",
     subjects: [],
   });
+
+  // IMPORTANT: use the admin endpoint to retrieve active and inactive tutors.
   const reload = () =>
-    request(`/tutors?search=${encodeURIComponent(q)}`)
+    request(
+      `/tutors/admin/list?search=${encodeURIComponent(q)}`,
+    )
       .then(setTutors)
       .catch((e) => setError(e.message));
+
   useEffect(() => {
     reload();
+
     request("/subjects")
       .then(setSubjects)
       .catch(() => {});
   }, [q]);
+
   const create = async (e) => {
     e.preventDefault();
+
     try {
-      await request("/tutors", { method: "POST", body: JSON.stringify(form) });
+      await request("/tutors", {
+        method: "POST",
+        body: JSON.stringify(form),
+      });
+
       setShow(false);
       setForm({
         name: "",
@@ -310,20 +389,26 @@ export function AdminTutors() {
         bio: "",
         subjects: [],
       });
+
       reload();
     } catch (e) {
       setError(e.message);
     }
   };
+
   const remove = async (t) => {
     if (!confirm(`Deactivate ${t.name}?`)) return;
+
     try {
-      await request(`/tutors/${t._id}`, { method: "DELETE" });
+      await request(`/tutors/${t._id}`, {
+        method: "DELETE",
+      });
       reload();
     } catch (e) {
       setError(e.message);
     }
   };
+
   return (
     <>
       <PageHead
@@ -336,6 +421,7 @@ export function AdminTutors() {
           </Button>
         }
       />
+
       <div className="table-tools">
         <div className="search-bar compact">
           <Search size={17} />
@@ -346,7 +432,9 @@ export function AdminTutors() {
           />
         </div>
       </div>
+
       {error && <div className="alert">{error}</div>}
+
       <div className="panel">
         <DataTable
           columns={[
@@ -354,7 +442,9 @@ export function AdminTutors() {
               label: "Tutor",
               render: (t) => (
                 <div className="table-person">
-                  <span className="user-avatar">{t.name?.slice(0, 1)}</span>
+                  <span className="user-avatar">
+                    {t.name?.slice(0, 1)}
+                  </span>
                   <span>
                     <b>{t.name}</b>
                     <small>{t.email}</small>
@@ -362,49 +452,95 @@ export function AdminTutors() {
                 </div>
               ),
             },
-            { label: "Qualifications", key: "qualifications" },
+            {
+              label: "Qualifications",
+              key: "qualifications",
+            },
             {
               label: "Subjects",
               render: (t) =>
-                (t.subjects || []).map((s) => s.name).join(", ") ||
-                "Not assigned",
+                (t.subjects || [])
+                  .map((s) => s.name)
+                  .join(", ") || "Not assigned",
+            },
+            {
+              label: "Status",
+              render: (t) => (
+                <span
+                  className={`status ${
+                    t.active
+                      ? "status-confirmed"
+                      : "status-cancelled"
+                  }`}
+                >
+                  {t.active ? "Active" : "Inactive"}
+                </span>
+              ),
             },
             {
               label: "Action",
-              render: (t) => (
-                <button
-                  className="icon-btn danger"
-                  onClick={() => remove(t)}
-                  title="Deactivate tutor"
-                >
-                  <Trash2 size={17} />
-                </button>
-              ),
+              render: (t) =>
+                t.active ? (
+                  <button
+                    className="icon-btn danger"
+                    onClick={() => remove(t)}
+                    title="Deactivate tutor"
+                  >
+                    <Trash2 size={17} />
+                  </button>
+                ) : (
+                  <button
+                    className="btn small primary"
+                    onClick={async () => {
+                      try {
+                        await request(`/users/${t._id}/active`, {
+                          method: "PATCH",
+                          body: JSON.stringify({ active: true }),
+                        });
+                        reload();
+                      } catch (e) {
+                        setError(e.message);
+                      }
+                    }}
+                  >
+                    Activate
+                  </button>
+                ),
             },
           ]}
           rows={tutors}
         />
       </div>
+
       {show && (
-        <Modal title="Create tutor profile" onClose={() => setShow(false)}>
+        <Modal
+          title="Create tutor profile"
+          onClose={() => setShow(false)}
+        >
           <form className="form-stack" onSubmit={create}>
             <label>
               Full name
               <input
                 required
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, name: e.target.value })
+                }
               />
             </label>
+
             <label>
               Email
               <input
                 required
                 type="email"
                 value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, email: e.target.value })
+                }
               />
             </label>
+
             <label>
               Temporary password
               <input
@@ -412,26 +548,36 @@ export function AdminTutors() {
                 minLength={8}
                 type="password"
                 value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, password: e.target.value })
+                }
               />
             </label>
+
             <label>
               Qualifications
               <input
                 value={form.qualifications}
                 onChange={(e) =>
-                  setForm({ ...form, qualifications: e.target.value })
+                  setForm({
+                    ...form,
+                    qualifications: e.target.value,
+                  })
                 }
               />
             </label>
+
             <label>
               Bio
               <textarea
                 rows="3"
                 value={form.bio}
-                onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, bio: e.target.value })
+                }
               />
             </label>
+
             <label>
               Assigned subjects
               <select
@@ -440,7 +586,9 @@ export function AdminTutors() {
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    subjects: [...e.target.selectedOptions].map((o) => o.value),
+                    subjects: [
+                      ...e.target.selectedOptions,
+                    ].map((o) => o.value),
                   })
                 }
               >
@@ -454,6 +602,7 @@ export function AdminTutors() {
                 Hold Ctrl (Windows) or Command (Mac) to select multiple.
               </small>
             </label>
+
             <Button>Create tutor</Button>
           </form>
         </Modal>
@@ -468,33 +617,44 @@ export function AdminSubjects() {
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(null);
   const [error, setError] = useState("");
+
   const [form, setForm] = useState({
     name: "",
     category: "General",
     description: "",
   });
+
   const reload = () =>
     request("/subjects")
       .then(setSubjects)
       .catch((e) => setError(e.message));
+
   useEffect(() => {
     reload();
   }, []);
+
   const save = async (e) => {
     e.preventDefault();
+
     try {
       await request(edit ? `/subjects/${edit._id}` : "/subjects", {
         method: edit ? "PUT" : "POST",
         body: JSON.stringify(form),
       });
+
       setShow(false);
       setEdit(null);
-      setForm({ name: "", category: "General", description: "" });
+      setForm({
+        name: "",
+        category: "General",
+        description: "",
+      });
       reload();
     } catch (e) {
       setError(e.message);
     }
   };
+
   const startEdit = (s) => {
     setEdit(s);
     setForm({
@@ -504,18 +664,24 @@ export function AdminSubjects() {
     });
     setShow(true);
   };
+
   const remove = async (s) => {
     if (!confirm(`Archive ${s.name}?`)) return;
+
     try {
-      await request(`/subjects/${s._id}`, { method: "DELETE" });
+      await request(`/subjects/${s._id}`, {
+        method: "DELETE",
+      });
       reload();
     } catch (e) {
       setError(e.message);
     }
   };
+
   const list = subjects.filter((s) =>
     s.name.toLowerCase().includes(q.toLowerCase()),
   );
+
   return (
     <>
       <PageHead
@@ -526,7 +692,11 @@ export function AdminSubjects() {
           <Button
             onClick={() => {
               setEdit(null);
-              setForm({ name: "", category: "General", description: "" });
+              setForm({
+                name: "",
+                category: "General",
+                description: "",
+              });
               setShow(true);
             }}
           >
@@ -534,6 +704,7 @@ export function AdminSubjects() {
           </Button>
         }
       />
+
       <div className="table-tools">
         <div className="search-bar compact">
           <Search size={17} />
@@ -544,7 +715,9 @@ export function AdminSubjects() {
           />
         </div>
       </div>
+
       {error && <div className="alert">{error}</div>}
+
       <div className="panel">
         <DataTable
           columns={[
@@ -562,7 +735,10 @@ export function AdminSubjects() {
                 </div>
               ),
             },
-            { label: "Description", key: "description" },
+            {
+              label: "Description",
+              key: "description",
+            },
             {
               label: "Actions",
               render: (s) => (
@@ -588,6 +764,7 @@ export function AdminSubjects() {
           rows={list}
         />
       </div>
+
       {show && (
         <Modal
           title={edit ? "Edit subject" : "Create subject"}
@@ -599,26 +776,36 @@ export function AdminSubjects() {
               <input
                 required
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, name: e.target.value })
+                }
               />
             </label>
+
             <label>
               Category
               <input
                 value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, category: e.target.value })
+                }
               />
             </label>
+
             <label>
               Description
               <textarea
                 rows="4"
                 value={form.description}
                 onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
+                  setForm({
+                    ...form,
+                    description: e.target.value,
+                  })
                 }
               />
             </label>
+
             <Button>{edit ? "Save changes" : "Create subject"}</Button>
           </form>
         </Modal>
@@ -633,6 +820,7 @@ export function AdminAvailability() {
   const [subjects, setSubjects] = useState([]);
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
+
   const [form, setForm] = useState({
     tutor: "",
     subject: "",
@@ -640,21 +828,27 @@ export function AdminAvailability() {
     startTime: "09:00",
     endTime: "10:00",
   });
+
   const reload = () =>
     request("/availability/mine")
       .then(setSlots)
       .catch((e) => setError(e.message));
+
   useEffect(() => {
     reload();
+
     request("/tutors")
       .then(setTutors)
       .catch(() => {});
+
     request("/subjects")
       .then(setSubjects)
       .catch(() => {});
   }, []);
+
   const save = async (e) => {
     e.preventDefault();
+
     try {
       await request("/availability", {
         method: "POST",
@@ -666,14 +860,18 @@ export function AdminAvailability() {
       setError(e.message);
     }
   };
+
   const remove = async (s) => {
     try {
-      await request(`/availability/${s._id}`, { method: "DELETE" });
+      await request(`/availability/${s._id}`, {
+        method: "DELETE",
+      });
       reload();
     } catch (e) {
       setError(e.message);
     }
   };
+
   return (
     <>
       <PageHead
@@ -686,22 +884,39 @@ export function AdminAvailability() {
           </Button>
         }
       />
+
       {error && <div className="alert">{error}</div>}
+
       <div className="panel">
         <DataTable
           columns={[
-            { label: "Tutor", render: (s) => s.tutor?.name },
-            { label: "Subject", render: (s) => s.subject?.name },
+            {
+              label: "Tutor",
+              render: (s) => s.tutor?.name,
+            },
+            {
+              label: "Subject",
+              render: (s) => s.subject?.name,
+            },
             {
               label: "Date",
-              render: (s) => new Date(s.date).toLocaleDateString("en-ZA"),
+              render: (s) =>
+                new Date(s.date).toLocaleDateString("en-ZA"),
             },
-            { label: "Time", render: (s) => `${s.startTime} – ${s.endTime}` },
+            {
+              label: "Time",
+              render: (s) =>
+                `${s.startTime} – ${s.endTime}`,
+            },
             {
               label: "Status",
               render: (s) => (
                 <span
-                  className={`status ${s.booked ? "status-confirmed" : "status-completed"}`}
+                  className={`status ${
+                    s.booked
+                      ? "status-confirmed"
+                      : "status-completed"
+                  }`}
                 >
                   {s.booked ? "Booked" : "Available"}
                 </span>
@@ -726,15 +941,21 @@ export function AdminAvailability() {
           rows={slots}
         />
       </div>
+
       {show && (
-        <Modal title="Create availability" onClose={() => setShow(false)}>
+        <Modal
+          title="Create availability"
+          onClose={() => setShow(false)}
+        >
           <form className="form-stack" onSubmit={save}>
             <label>
               Tutor
               <select
                 required
                 value={form.tutor}
-                onChange={(e) => setForm({ ...form, tutor: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, tutor: e.target.value })
+                }
               >
                 <option value="">Choose a tutor</option>
                 {tutors.map((t) => (
@@ -744,12 +965,15 @@ export function AdminAvailability() {
                 ))}
               </select>
             </label>
+
             <label>
               Subject
               <select
                 required
                 value={form.subject}
-                onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, subject: e.target.value })
+                }
               >
                 <option value="">Choose a subject</option>
                 {subjects.map((s) => (
@@ -759,6 +983,7 @@ export function AdminAvailability() {
                 ))}
               </select>
             </label>
+
             <label>
               Date
               <input
@@ -766,9 +991,12 @@ export function AdminAvailability() {
                 type="date"
                 min={new Date().toISOString().slice(0, 10)}
                 value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, date: e.target.value })
+                }
               />
             </label>
+
             <div className="form-grid">
               <label>
                 Start time
@@ -777,10 +1005,14 @@ export function AdminAvailability() {
                   type="time"
                   value={form.startTime}
                   onChange={(e) =>
-                    setForm({ ...form, startTime: e.target.value })
+                    setForm({
+                      ...form,
+                      startTime: e.target.value,
+                    })
                   }
                 />
               </label>
+
               <label>
                 End time
                 <input
@@ -788,11 +1020,15 @@ export function AdminAvailability() {
                   type="time"
                   value={form.endTime}
                   onChange={(e) =>
-                    setForm({ ...form, endTime: e.target.value })
+                    setForm({
+                      ...form,
+                      endTime: e.target.value,
+                    })
                   }
                 />
               </label>
             </div>
+
             <Button>Create slot</Button>
           </form>
         </Modal>
@@ -800,3 +1036,4 @@ export function AdminAvailability() {
     </>
   );
 }
+

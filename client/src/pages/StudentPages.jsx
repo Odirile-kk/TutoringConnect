@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, GraduationCap, Users, CalendarDays, LayoutDashboard, LogOut, Menu, X, ArrowRight, ShieldCheck, Clock, Star, Search, Plus, CheckCircle2, ChevronDown, UserRound, Settings, ChartNoAxesCombined, BookMarked, CalendarCheck, Trash2, Edit3, Filter } from "lucide-react";
+import { BookOpen, GraduationCap, Users, CalendarDays, LayoutDashboard, LogOut, Menu, X, ArrowRight, ShieldCheck, Clock, Star, Search, Plus, CheckCircle2, ChevronDown, UserRound, Settings, ChartNoAxesCombined, BookMarked, CalendarCheck, Trash2, Edit3, Filter, Download } from "lucide-react";
 import { useAuth, request } from "../context/AuthContext";
 import { Button, PageHead, BookingCard, Empty, RatingForm } from "../components/AppComponents";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export function StudentDashboard() {
   const { user } = useAuth();
@@ -447,6 +449,67 @@ export function TutorProfile() {
   );
 }
 
+
+function downloadBookingHistoryPdf(bookings, user) {
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const isTutor = user.role === "tutor";
+  const isAdmin = user.role === "admin";
+  const title = isTutor ? "Teaching Session History" : isAdmin ? "Platform Booking History" : "Booking History";
+  const generatedAt = new Date().toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" });
+
+  doc.setFillColor(28, 62, 125);
+  doc.rect(0, 0, 297, 34, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(19);
+  doc.text("Tutoring Connect", 14, 14);
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.text(title, 14, 23);
+  doc.setFontSize(8);
+  doc.text(`Generated ${generatedAt}`, 14, 29);
+
+  doc.setTextColor(35, 48, 72);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text(`Account: ${user.name || "User"}`, 14, 43);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`Total sessions: ${bookings.length}`, 14, 49);
+
+  const rows = bookings.map((b) => [
+    b.student?.name || "—",
+    b.subject?.name || "—",
+    b.tutor?.name || "—",
+    b.date ? new Date(b.date).toLocaleDateString("en-ZA", { day: "2-digit", month: "short", year: "numeric" }) : "—",
+    [b.startTime, b.endTime].filter(Boolean).join(" – ") || "—",
+    (b.status || "unknown").charAt(0).toUpperCase() + (b.status || "unknown").slice(1),
+  ]);
+
+  autoTable(doc, {
+    startY: 56,
+    head: [["Student", "Subject", "Tutor", "Date", "Time", "Status"]],
+    body: rows.length ? rows : [["—", "No bookings found", "—", "—", "—", "—"]],
+    theme: "grid",
+    margin: { left: 14, right: 14, top: 14, bottom: 16 },
+    styles: { font: "helvetica", fontSize: 9, cellPadding: 3, textColor: [42, 52, 68], lineColor: [220, 228, 239], lineWidth: 0.2, overflow: "linebreak" },
+    headStyles: { fillColor: [28, 62, 125], textColor: [255, 255, 255], fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [243, 247, 252] },
+    columnStyles: { 0: { cellWidth: 48 }, 1: { cellWidth: 65 }, 2: { cellWidth: 48 }, 3: { cellWidth: 32 }, 4: { cellWidth: 35 }, 5: { cellWidth: 28 } },
+    didDrawPage: () => {
+      const pageCount = doc.internal.getNumberOfPages();
+      const page = doc.internal.getCurrentPageInfo().pageNumber;
+      doc.setFontSize(8);
+      doc.setTextColor(110, 120, 138);
+      doc.text("Tutoring Connect | Booking history", 14, 203);
+      doc.text(`Page ${page} of ${pageCount}`, 283, 203, { align: "right" });
+    },
+  });
+
+  const filename = isTutor ? "tutoring-connect-teaching-session-history.pdf" : isAdmin ? "tutoring-connect-platform-booking-history.pdf" : "tutoring-connect-booking-history.pdf";
+  doc.save(filename);
+}
+
 export function MyBookings() {
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
@@ -539,6 +602,18 @@ export function MyBookings() {
             : user.role === "tutor"
               ? "Keep track of upcoming sessions with your students."
               : "All your upcoming and previous learning sessions in one place."
+        }
+        action={
+          <button
+            type="button"
+            className="btn primary"
+            onClick={() => downloadBookingHistoryPdf(bookings, user)}
+            disabled={!bookings.length}
+            title={!bookings.length ? "There are no bookings to export yet" : "Download booking history as PDF"}
+          >
+            <Download size={17} />
+            Download PDF
+          </button>
         }
       />
       {error && <div className="alert">{error}</div>}
