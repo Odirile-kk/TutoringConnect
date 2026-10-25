@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 const AuthContext = createContext(null);
-export const API = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+export const API = import.meta.env.VITE_API_URL || "http://localhost:5002/api";
 export async function request(path, options = {}) {
   const token = localStorage.getItem("tc_token");
   const res = await fetch(`${API}${path}`, {
