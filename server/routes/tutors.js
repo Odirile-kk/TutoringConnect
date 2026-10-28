@@ -1,7 +1,11 @@
-
 import { Router } from "express";
+import mongoose from "mongoose";
+
 import User from "../models/User.js";
 import Rating from "../models/Rating.js";
+import Booking from "../models/Booking.js";
+import Availability from "../models/Availability.js";
+
 import { protect, allow } from "../middleware/auth.js";
 
 const r = Router();
@@ -245,34 +249,85 @@ r.put("/:id", protect, allow("admin"), async (req, res, next) => {
 
 // DELETE /api/tutors/:id
 // Admin deactivates a tutor.
-r.delete("/:id", protect, allow("admin"), async (req, res, next) => {
+
+r.delete("/:id", protect, allow("admin"), async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).json({ message: "Invalid tutor ID." });
+  }
+
+  const session = await mongoose.startSession();
+
   try {
-    const tutor = await User.findOneAndUpdate(
-      {
-        _id: req.params.id,
+    let deletedTutorName = "";
+
+    await session.withTransaction(async () => {
+      const tutor = await User.findOne({
+        _id: id,
         role: "tutor",
-      },
-      {
-        active: false,
-      },
-      {
-        new: true,
-      },
-    );
+      }).session(session);
 
-    if (!tutor) {
-      return res.status(404).json({
-        message: "Tutor not found.",
-      });
-    }
+      if (!tutor) {
+        const error = new Error("Tutor not found.");
+        error.status = 404;
+        throw error;
+      }
 
-    res.json({
-      message: "Tutor deactivated.",
+      deletedTutorName = tutor.name;
+
+      // Collect booking IDs BEFORE deleting the bookings.
+      const bookingIds = await Booking.find({
+        tutor: tutor._id,
+      })
+        .distinct("_id")
+        .session(session);
+
+      // Delete tutor ratings, including ratings associated
+      // with this tutor's bookings. Do not delete platform ratings.
+      await Rating.deleteMany({
+        type: "tutor",
+        $or: [
+          { target: tutor._id },
+          { booking: { $in: bookingIds } },
+        ],
+      }).session(session);
+
+      // Delete all bookings belonging to this tutor.
+      await Booking.deleteMany({
+        tutor: tutor._id,
+      }).session(session);
+
+      // Delete all availability slots belonging to this tutor.
+      await Availability.deleteMany({
+        tutor: tutor._id,
+      }).session(session);
+
+      // Permanently delete the tutor account itself.
+      await User.deleteOne({
+        _id: tutor._id,
+        role: "tutor",
+      }).session(session);
+    });
+
+    return res.status(200).json({
+      message: "Tutor and related records permanently deleted.",
+      tutor: deletedTutorName,
     });
   } catch (error) {
-    next(error);
+    console.error("Permanent tutor deletion failed:", error);
+
+    return res.status(error.status || 500).json({
+      message:
+        error.status === 404
+          ? error.message
+          : "Could not permanently delete the tutor. Check the server logs.",
+    });
+  } finally {
+    await session.endSession();
   }
 });
+
 
 export default r;
 

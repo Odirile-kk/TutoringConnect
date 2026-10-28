@@ -339,12 +339,15 @@ export function AdminUsers() {
   );
 }
 
+
 export function AdminTutors() {
   const [tutors, setTutors] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [q, setQ] = useState("");
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -355,13 +358,17 @@ export function AdminTutors() {
     subjects: [],
   });
 
-  // IMPORTANT: use the admin endpoint to retrieve active and inactive tutors.
-  const reload = () =>
-    request(
-      `/tutors/admin/list?search=${encodeURIComponent(q)}`,
-    )
-      .then(setTutors)
-      .catch((e) => setError(e.message));
+  const reload = async () => {
+    try {
+      const data = await request(
+        `/tutors/admin/list?search=${encodeURIComponent(q)}`
+      );
+      setTutors(data);
+      setError("");
+    } catch (e) {
+      setError(e.message || "Unable to load tutors.");
+    }
+  };
 
   useEffect(() => {
     reload();
@@ -371,8 +378,21 @@ export function AdminTutors() {
       .catch(() => {});
   }, [q]);
 
+  const resetForm = () => {
+    setForm({
+      name: "",
+      email: "",
+      password: "",
+      qualifications: "",
+      bio: "",
+      subjects: [],
+    });
+  };
+
   const create = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
 
     try {
       await request("/tutors", {
@@ -381,31 +401,60 @@ export function AdminTutors() {
       });
 
       setShow(false);
-      setForm({
-        name: "",
-        email: "",
-        password: "",
-        qualifications: "",
-        bio: "",
-        subjects: [],
-      });
-
-      reload();
+      resetForm();
+      setSuccess("Tutor created successfully.");
+      await reload();
     } catch (e) {
-      setError(e.message);
+      setError(e.message || "Unable to create tutor.");
     }
   };
 
   const remove = async (t) => {
-    if (!confirm(`Deactivate ${t.name}?`)) return;
+    const confirmed = window.confirm(
+      `PERMANENTLY DELETE ${t.name}?\n\n` +
+        "This permanently removes the tutor account, their bookings, " +
+        "availability slots, and tutor ratings.\n\n" +
+        "This action cannot be undone. Continue?"
+    );
+
+    if (!confirmed) return;
+
+    setError("");
+    setSuccess("");
+    setDeletingId(t._id);
 
     try {
       await request(`/tutors/${t._id}`, {
         method: "DELETE",
       });
-      reload();
+
+      setTutors((current) =>
+        current.filter((tutor) => tutor._id !== t._id)
+      );
+
+      setSuccess(`${t.name} was permanently deleted.`);
+      await reload();
     } catch (e) {
-      setError(e.message);
+      setError(e.message || "Unable to delete tutor.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const activate = async (t) => {
+    setError("");
+    setSuccess("");
+
+    try {
+      await request(`/users/${t._id}/active`, {
+        method: "PATCH",
+        body: JSON.stringify({ active: true }),
+      });
+
+      setSuccess(`${t.name} has been activated.`);
+      await reload();
+    } catch (e) {
+      setError(e.message || "Unable to activate tutor.");
     }
   };
 
@@ -414,7 +463,7 @@ export function AdminTutors() {
       <PageHead
         eyebrow="TEACHING TEAM"
         title="Tutor management"
-        description="Create tutor profiles and manage your teaching team."
+        description="Create tutor profiles, manage account status, and permanently remove tutors."
         action={
           <Button onClick={() => setShow(true)}>
             <Plus size={17} /> Add tutor
@@ -434,6 +483,12 @@ export function AdminTutors() {
       </div>
 
       {error && <div className="alert">{error}</div>}
+
+      {success && (
+        <div className="alert" role="status">
+          {success}
+        </div>
+      )}
 
       <div className="panel">
         <DataTable
@@ -478,34 +533,32 @@ export function AdminTutors() {
               ),
             },
             {
-              label: "Action",
-              render: (t) =>
-                t.active ? (
+              label: "Actions",
+              render: (t) => (
+                <div className="booking-actions">
+                  {!t.active && (
+                    <button
+                      type="button"
+                      className="btn small primary"
+                      disabled={deletingId === t._id}
+                      onClick={() => activate(t)}
+                    >
+                      Activate
+                    </button>
+                  )}
+
                   <button
+                    type="button"
                     className="icon-btn danger"
+                    disabled={deletingId === t._id}
                     onClick={() => remove(t)}
-                    title="Deactivate tutor"
+                    title={`Permanently delete ${t.name}`}
+                    aria-label={`Permanently delete ${t.name}`}
                   >
                     <Trash2 size={17} />
                   </button>
-                ) : (
-                  <button
-                    className="btn small primary"
-                    onClick={async () => {
-                      try {
-                        await request(`/users/${t._id}/active`, {
-                          method: "PATCH",
-                          body: JSON.stringify({ active: true }),
-                        });
-                        reload();
-                      } catch (e) {
-                        setError(e.message);
-                      }
-                    }}
-                  >
-                    Activate
-                  </button>
-                ),
+                </div>
+              ),
             },
           ]}
           rows={tutors}
@@ -586,9 +639,10 @@ export function AdminTutors() {
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    subjects: [
-                      ...e.target.selectedOptions,
-                    ].map((o) => o.value),
+                    subjects: Array.from(
+                      e.target.selectedOptions,
+                      (option) => option.value
+                    ),
                   })
                 }
               >
@@ -610,6 +664,7 @@ export function AdminTutors() {
     </>
   );
 }
+
 
 export function AdminSubjects() {
   const [subjects, setSubjects] = useState([]);
