@@ -88,6 +88,49 @@
   text-decoration: underline;
   margin-left: 5px;
 }
+.confirmation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+.toast-notification {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 200;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px 20px;
+  width: min(390px, calc(100vw - 32px));
+  padding: 16px 18px;
+  border: 1px solid #dce4f3;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 36px #17274626;
+  color: #354765;
+}
+.toast-notification p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+.toast-notification.toast-success {
+  border-color: #c8eedc;
+  background: #edf9f3;
+  color: #247f5b;
+}
+.toast-dismiss {
+  grid-column: 2;
+  grid-row: 1;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 21px;
+  line-height: 1;
+}
 .panel {
   background: #fff;
   border: 1px solid #e6ebf4;

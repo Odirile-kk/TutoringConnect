@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { BookOpen, GraduationCap, Users, CalendarDays, LayoutDashboard, LogOut, Menu, X, ArrowRight, ShieldCheck, Clock, Star, Search, Plus, CheckCircle2, ChevronDown, UserRound, Settings, ChartNoAxesCombined, BookMarked, CalendarCheck, Trash2, Edit3, Filter } from "lucide-react";
 import { useAuth, request } from "../context/AuthContext";
-import { Button, PageHead, StatCard, BookingCard, QuickAdmin, Empty, DataTable, Modal } from "../components/AppComponents";
+import { Button, PageHead, StatCard, BookingCard, QuickAdmin, Empty, DataTable, Modal, ConfirmDialog } from "../components/AppComponents";
 
 function earliestAvailabilityDate() {
   const date = new Date();
@@ -102,6 +102,7 @@ export function TutorAvailability() {
   const [subjects, setSubjects] = useState([]);
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
+  const [pendingRemoval, setPendingRemoval] = useState(null);
   const [form, setForm] = useState({
     subject: "",
     date: "",
@@ -182,7 +183,7 @@ export function TutorAvailability() {
                 !s.booked ? (
                   <button
                     className="icon-btn danger"
-                    onClick={() => remove(s)}
+                    onClick={() => setPendingRemoval(s)}
                     title="Remove slot"
                   >
                     <Trash2 size={17} />
@@ -195,6 +196,17 @@ export function TutorAvailability() {
           rows={slots}
         />
       </div>
+      {pendingRemoval && (
+        <ConfirmDialog
+          message="Are you sure you want to remove this availability?"
+          onCancel={() => setPendingRemoval(null)}
+          onConfirm={() => {
+            const slotToRemove = pendingRemoval;
+            setPendingRemoval(null);
+            remove(slotToRemove);
+          }}
+        />
+      )}
       {show && (
         <Modal title="Add time slot" onClose={() => setShow(false)}>
           <form className="form-stack" onSubmit={save}>

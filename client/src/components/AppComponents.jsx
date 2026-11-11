@@ -117,8 +117,26 @@ export function AppShell({ children, staff = false }) {
             className="icon-btn"
             title="Log out"
             onClick={() => {
-              logout();
-              nav("/");
+              window.dispatchEvent(
+                new CustomEvent("app-toast", {
+                  detail: {
+                    type: "confirm",
+                    message: "Are you sure you want to log out?",
+                    onConfirm: () => {
+                      logout();
+                      nav("/");
+                      window.dispatchEvent(
+                        new CustomEvent("app-toast", {
+                          detail: {
+                            type: "success",
+                            message: "You have been signed out.",
+                          },
+                        }),
+                      );
+                    },
+                  },
+                }),
+              );
             }}
           >
             <LogOut size={17} />
@@ -293,6 +311,20 @@ export function Modal({ title, onClose, children }) {
         {children}
       </div>
     </div>
+  );
+}
+
+export function ConfirmDialog({ message, onConfirm, onCancel }) {
+  return (
+    <Modal title="Are you sure?" onClose={onCancel}>
+      <p>{message}</p>
+      <div className="confirmation-actions">
+        <Button variant="secondary" onClick={onCancel}>
+          No
+        </Button>
+        <Button onClick={onConfirm}>Yes</Button>
+      </div>
+    </Modal>
   );
 }
 

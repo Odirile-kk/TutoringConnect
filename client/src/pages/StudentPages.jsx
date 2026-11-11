@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, GraduationCap, Users, CalendarDays, LayoutDashboard, LogOut, Menu, X, ArrowRight, ShieldCheck, Clock, Star, Search, Plus, CheckCircle2, ChevronDown, UserRound, Settings, ChartNoAxesCombined, BookMarked, CalendarCheck, Trash2, Edit3, Filter, Download, Camera } from "lucide-react";
+import { BookOpen, GraduationCap, Users, CalendarDays, LayoutDashboard, LogOut, Menu, X, ArrowRight, ShieldCheck, Clock, Star, Search, Plus, CheckCircle2, ChevronDown, UserRound, Settings, ChartNoAxesCombined, BookMarked, CalendarCheck, Trash2, Filter, Download, Camera } from "lucide-react";
 import { useAuth, request } from "../context/AuthContext";
-import { Button, PageHead, BookingCard, Empty, RatingForm } from "../components/AppComponents";
+import { Button, PageHead, BookingCard, Empty, RatingForm, ConfirmDialog } from "../components/AppComponents";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -194,7 +194,7 @@ export function Tutors() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search tutors by name or experience…"
+          placeholder="Search tutors by name..."
         />
         <span>{list.length} tutors</span>
       </div>
@@ -503,10 +503,10 @@ function downloadBookingHistoryPdf(bookings, user) {
 export function MyBookings() {
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
-  const [slots, setSlots] = useState([]);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [pendingCancellation, setPendingCancellation] = useState(null);
   const [filter, setFilter] = useState("all");
-  const [reschedule, setReschedule] = useState(null);
   const [tutorRatings, setTutorRatings] = useState({});
   const [ratingBooking, setRatingBooking] = useState("");
   const reload = () =>
@@ -516,9 +516,6 @@ export function MyBookings() {
   useEffect(() => {
     reload();
     if (user.role === "student") {
-      request("/availability")
-        .then(setSlots)
-        .catch(() => {});
       request("/ratings/mine")
         .then((data) =>
           setTutorRatings(
@@ -549,26 +546,12 @@ export function MyBookings() {
     }
   };
   const cancel = async (b) => {
-    if (
-      !confirm(
-        "Cancel this session? Its time slot will become available again.",
-      )
-    )
-      return;
+    if (user.role === "admin") setMessage("");
     try {
       await request(`/bookings/${b._id}/cancel`, { method: "PATCH" });
-      reload();
-    } catch (e) {
-      setError(e.message);
-    }
-  };
-  const change = async (availability) => {
-    try {
-      await request(`/bookings/${reschedule._id}/reschedule`, {
-        method: "PATCH",
-        body: JSON.stringify({ availability }),
-      });
-      setReschedule(null);
+      if (user.role === "admin") {
+        setMessage("Booking cancelled successfully.");
+      }
       reload();
     } catch (e) {
       setError(e.message);
@@ -607,6 +590,11 @@ export function MyBookings() {
         }
       />
       {error && <div className="alert">{error}</div>}
+      {message && (
+        <div className="success-alert" role="status" aria-live="polite">
+          {message}
+        </div>
+      )}
       <div className="filter-tabs">
         {[
           ["all", "All sessions"],
@@ -636,20 +624,11 @@ export function MyBookings() {
                       <div className="booking-actions">
                         <button
                           title="Cancel booking"
-                          onClick={() => cancel(b)}
+                          onClick={() => setPendingCancellation(b)}
                           className="icon-btn danger"
                         >
                           <X size={16} />
                         </button>
-                        {user.role === "student" && (
-                          <button
-                            title="Reschedule booking"
-                            className="icon-btn"
-                            onClick={() => setReschedule(b)}
-                          >
-                            <Edit3 size={16} />
-                          </button>
-                        )}
                       </div>
                     )
               }
@@ -688,52 +667,16 @@ export function MyBookings() {
           text="Bookings matching this filter will appear here."
         />
       )}
-      {reschedule && (
-        <div className="modal-backdrop">
-          <div className="modal">
-            <button
-              className="modal-close icon-btn"
-              onClick={() => setReschedule(null)}
-            >
-              <X />
-            </button>
-            <span className="eyebrow">CHANGE YOUR SESSION</span>
-            <h2>Reschedule booking</h2>
-            <p>
-              Choose a new available time. Your current slot will be released.
-            </p>
-            <div className="reschedule-slots">
-              {slots
-                .filter((s) => s._id !== reschedule.availability)
-                .map((s) => (
-                  <button
-                    key={s._id}
-                    className="reschedule-option"
-                    onClick={() => change(s._id)}
-                  >
-                    <span>
-                      <b>
-                        {new Date(s.date).toLocaleDateString("en-ZA", {
-                          day: "numeric",
-                          month: "short",
-                          weekday: "short",
-                        })}
-                      </b>
-                      <small>
-                        {s.tutor?.name} · {s.subject?.name}
-                      </small>
-                    </span>
-                    <span>
-                      {s.startTime}–{s.endTime} <ArrowRight size={15} />
-                    </span>
-                  </button>
-                ))}
-            </div>
-            {!slots.length && (
-              <p>No alternative slots are currently available.</p>
-            )}
-          </div>
-        </div>
+      {pendingCancellation && (
+        <ConfirmDialog
+          message="Are you sure you want to cancel this session? Its time slot will become available again."
+          onCancel={() => setPendingCancellation(null)}
+          onConfirm={() => {
+            const bookingToCancel = pendingCancellation;
+            setPendingCancellation(null);
+            cancel(bookingToCancel);
+          }}
+        />
       )}
     </>
   );

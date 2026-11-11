@@ -191,9 +191,11 @@ r.post("/", protect, allow("admin"), async (req, res, next) => {
       subjects,
     });
 
-    res.status(201).json(
-      await tutor.populate("subjects", "name"),
-    );
+    const populatedTutor = await tutor.populate("subjects", "name");
+    const safeTutor = populatedTutor.toObject();
+    delete safeTutor.password;
+
+    res.status(201).json(safeTutor);
   } catch (error) {
     next(error);
   }
@@ -275,4 +277,3 @@ r.delete("/:id", protect, allow("admin"), async (req, res, next) => {
 });
 
 export default r;
-

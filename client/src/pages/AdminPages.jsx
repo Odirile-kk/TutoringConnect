@@ -25,6 +25,7 @@ import {
   Empty,
   DataTable,
   Modal,
+  ConfirmDialog,
 } from "../components/AppComponents";
 
 export function AdminDashboard() {
@@ -166,7 +167,7 @@ export function AdminDashboard() {
         <QuickAdmin
           to="/admin/users"
           icon={<Users />}
-          title="Students & users"
+          title="Students"
           text="Search accounts and manage access"
         />
         <QuickAdmin
@@ -197,6 +198,14 @@ export function AdminUsers() {
   const [q, setQ] = useState("");
   const [role, setRole] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [pendingDeactivation, setPendingDeactivation] = useState(null);
+  const [showCreateAdmin, setShowCreateAdmin] = useState(false);
+  const [adminForm, setAdminForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
   const reload = () =>
     request(
@@ -212,11 +221,14 @@ export function AdminUsers() {
   }, [q, role]);
 
   const active = async (u) => {
+    setMessage("");
     try {
       await request(`/users/${u._id}/active`, {
         method: "PATCH",
         body: JSON.stringify({ active: !u.active }),
       });
+      setError("");
+      setMessage(`${u.name} was ${u.active ? "deactivated" : "activated"}.`);
       reload();
     } catch (e) {
       setError(e.message);
@@ -224,11 +236,41 @@ export function AdminUsers() {
   };
 
   const changeRole = async (u, newRole) => {
+    setMessage("");
     try {
       await request(`/users/${u._id}/role`, {
         method: "PATCH",
         body: JSON.stringify({ role: newRole }),
       });
+      setError("");
+      setMessage(`${u.name}'s role was updated to ${newRole}.`);
+      reload();
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const toggleActive = (u) => {
+    if (u.active) {
+      setPendingDeactivation(u);
+      return;
+    }
+    active(u);
+  };
+
+  const createAdmin = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setError("");
+
+    try {
+      await request("/users/admin", {
+        method: "POST",
+        body: JSON.stringify(adminForm),
+      });
+      setMessage(`Admin account created for ${adminForm.name}.`);
+      setShowCreateAdmin(false);
+      setAdminForm({ name: "", email: "", password: "" });
       reload();
     } catch (e) {
       setError(e.message);
@@ -241,6 +283,11 @@ export function AdminUsers() {
         eyebrow="USER DIRECTORY"
         title="Students & users"
         description="Search accounts, review roles and manage account access."
+        action={
+          <Button onClick={() => setShowCreateAdmin(true)}>
+            <Plus size={17} /> Add admin
+          </Button>
+        }
       />
 
       <div className="table-tools">
@@ -265,6 +312,11 @@ export function AdminUsers() {
       </div>
 
       {error && <div className="alert">{error}</div>}
+      {message && (
+        <div className="success-alert" role="status" aria-live="polite">
+          {message}
+        </div>
+      )}
 
       <div className="panel">
         <DataTable
@@ -325,7 +377,7 @@ export function AdminUsers() {
                   className={`btn small ${
                     u.active ? "secondary" : "primary"
                   }`}
-                  onClick={() => active(u)}
+                  onClick={() => toggleActive(u)}
                 >
                   {u.active ? "Deactivate" : "Activate"}
                 </button>
@@ -335,6 +387,64 @@ export function AdminUsers() {
           rows={users}
         />
       </div>
+      {pendingDeactivation && (
+        <ConfirmDialog
+          message={`Are you sure you want to deactivate ${pendingDeactivation.name}?`}
+          onCancel={() => setPendingDeactivation(null)}
+          onConfirm={() => {
+            const userToDeactivate = pendingDeactivation;
+            setPendingDeactivation(null);
+            active(userToDeactivate);
+          }}
+        />
+      )}
+      {showCreateAdmin && (
+        <Modal
+          title="Create admin account"
+          onClose={() => setShowCreateAdmin(false)}
+        >
+          <form className="form-stack" onSubmit={createAdmin}>
+            <label>
+              Full name
+              <input
+                required
+                maxLength={100}
+                value={adminForm.name}
+                onChange={(e) =>
+                  setAdminForm({ ...adminForm, name: e.target.value })
+                }
+              />
+            </label>
+
+            <label>
+              Email
+              <input
+                required
+                type="text"
+                value={adminForm.email}
+                onChange={(e) =>
+                  setAdminForm({ ...adminForm, email: e.target.value })
+                }
+              />
+            </label>
+
+            <label>
+              Temporary password
+              <input
+                required
+                minLength={8}
+                type="password"
+                value={adminForm.password}
+                onChange={(e) =>
+                  setAdminForm({ ...adminForm, password: e.target.value })
+                }
+              />
+            </label>
+
+            <Button>Create admin</Button>
+          </form>
+        </Modal>
+      )}
     </>
   );
 }
@@ -345,6 +455,8 @@ export function AdminTutors() {
   const [q, setQ] = useState("");
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [pendingRemoval, setPendingRemoval] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -372,6 +484,7 @@ export function AdminTutors() {
 
   const create = async (e) => {
     e.preventDefault();
+    setMessage("");
 
     try {
       await request("/tutors", {
@@ -379,6 +492,8 @@ export function AdminTutors() {
         body: JSON.stringify(form),
       });
 
+      setError("");
+      setMessage(`Tutor profile created for ${form.name}.`);
       setShow(false);
       setForm({
         name: "",
@@ -396,12 +511,13 @@ export function AdminTutors() {
   };
 
   const remove = async (t) => {
-    if (!confirm(`Deactivate ${t.name}?`)) return;
-
+    setMessage("");
     try {
       await request(`/tutors/${t._id}`, {
         method: "DELETE",
       });
+      setError("");
+      setMessage(`${t.name} was deactivated.`);
       reload();
     } catch (e) {
       setError(e.message);
@@ -433,6 +549,11 @@ export function AdminTutors() {
       </div>
 
       {error && <div className="alert">{error}</div>}
+      {message && (
+        <div className="success-alert" role="status" aria-live="polite">
+          {message}
+        </div>
+      )}
 
       <div className="panel">
         <DataTable
@@ -479,37 +600,46 @@ export function AdminTutors() {
             {
               label: "Action",
               render: (t) =>
-                t.active ? (
-                  <button
-                    className="icon-btn danger"
-                    onClick={() => remove(t)}
-                    title="Deactivate tutor"
-                  >
-                    <Trash2 size={17} />
-                  </button>
-                ) : (
-                  <button
-                    className="btn small primary"
-                    onClick={async () => {
-                      try {
-                        await request(`/users/${t._id}/active`, {
-                          method: "PATCH",
-                          body: JSON.stringify({ active: true }),
-                        });
-                        reload();
-                      } catch (e) {
-                        setError(e.message);
-                      }
-                    }}
-                  >
-                    Activate
-                  </button>
-                ),
+                <button
+                  className={`btn small ${t.active ? "secondary" : "primary"}`}
+                  onClick={async () => {
+                    if (t.active) {
+                      setPendingRemoval(t);
+                      return;
+                    }
+                    setMessage("");
+                    try {
+                      await request(`/users/${t._id}/active`, {
+                        method: "PATCH",
+                        body: JSON.stringify({ active: true }),
+                      });
+                      setError("");
+                      setMessage(`${t.name} was activated.`);
+                      reload();
+                    } catch (e) {
+                      setError(e.message);
+                    }
+                  }}
+                >
+                  {t.active ? "Deactivate" : "Activate"}
+                </button>,
             },
           ]}
           rows={tutors}
         />
       </div>
+
+      {pendingRemoval && (
+        <ConfirmDialog
+          message={`Are you sure you want to deactivate ${pendingRemoval.name}?`}
+          onCancel={() => setPendingRemoval(null)}
+          onConfirm={() => {
+            const tutorToDeactivate = pendingRemoval;
+            setPendingRemoval(null);
+            remove(tutorToDeactivate);
+          }}
+        />
+      )}
 
       {show && (
         <Modal
@@ -577,30 +707,38 @@ export function AdminTutors() {
               />
             </label>
 
-            <label>
-              Assigned subjects
-              <select
-                multiple
-                value={form.subjects}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    subjects: [
-                      ...e.target.selectedOptions,
-                    ].map((o) => o.value),
-                  })
-                }
-              >
-                {subjects.map((s) => (
-                  <option key={s._id} value={s._id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-              <small>
-                Hold Ctrl (Windows) or Command (Mac) to select multiple.
-              </small>
-            </label>
+            <div className="profile-subject-picker">
+              <b>Assigned subjects</b>
+              <p>Select the subjects this tutor will teach.</p>
+              {subjects.length ? (
+                <div className="profile-subject-options">
+                  {subjects.map((subject) => (
+                    <label
+                      className="profile-subject-option"
+                      key={subject._id}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={form.subjects.includes(subject._id)}
+                        onChange={() =>
+                          setForm({
+                            ...form,
+                            subjects: form.subjects.includes(subject._id)
+                              ? form.subjects.filter(
+                                  (id) => id !== subject._id,
+                                )
+                              : [...form.subjects, subject._id],
+                          })
+                        }
+                      />
+                      <span>{subject.name}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <p>No active subjects are available.</p>
+              )}
+            </div>
 
             <Button>Create tutor</Button>
           </form>
@@ -616,6 +754,8 @@ export function AdminSubjects() {
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(null);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [pendingRemoval, setPendingRemoval] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -634,6 +774,7 @@ export function AdminSubjects() {
 
   const save = async (e) => {
     e.preventDefault();
+    setMessage("");
 
     try {
       await request(edit ? `/subjects/${edit._id}` : "/subjects", {
@@ -641,6 +782,12 @@ export function AdminSubjects() {
         body: JSON.stringify(form),
       });
 
+      setError("");
+      setMessage(
+        edit
+          ? `${form.name} was updated.`
+          : `${form.name} was added to the subject catalogue.`,
+      );
       setShow(false);
       setEdit(null);
       setForm({
@@ -665,12 +812,13 @@ export function AdminSubjects() {
   };
 
   const remove = async (s) => {
-    if (!confirm(`Archive ${s.name}?`)) return;
-
+    setMessage("");
     try {
       await request(`/subjects/${s._id}`, {
         method: "DELETE",
       });
+      setError("");
+      setMessage(`${s.name} was archived.`);
       reload();
     } catch (e) {
       setError(e.message);
@@ -716,6 +864,11 @@ export function AdminSubjects() {
       </div>
 
       {error && <div className="alert">{error}</div>}
+      {message && (
+        <div className="success-alert" role="status" aria-live="polite">
+          {message}
+        </div>
+      )}
 
       <div className="panel">
         <DataTable
@@ -751,7 +904,7 @@ export function AdminSubjects() {
                   </button>
                   <button
                     className="icon-btn danger"
-                    onClick={() => remove(s)}
+                    onClick={() => setPendingRemoval(s)}
                     title="Archive subject"
                   >
                     <Trash2 size={17} />
@@ -763,6 +916,18 @@ export function AdminSubjects() {
           rows={list}
         />
       </div>
+
+      {pendingRemoval && (
+        <ConfirmDialog
+          message={`Are you sure you want to archive ${pendingRemoval.name}?`}
+          onCancel={() => setPendingRemoval(null)}
+          onConfirm={() => {
+            const subjectToArchive = pendingRemoval;
+            setPendingRemoval(null);
+            remove(subjectToArchive);
+          }}
+        />
+      )}
 
       {show && (
         <Modal
@@ -819,6 +984,8 @@ export function AdminAvailability() {
   const [subjects, setSubjects] = useState([]);
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [pendingRemoval, setPendingRemoval] = useState(null);
 
   const [form, setForm] = useState({
     tutor: "",
@@ -847,12 +1014,15 @@ export function AdminAvailability() {
 
   const save = async (e) => {
     e.preventDefault();
+    setMessage("");
 
     try {
       await request("/availability", {
         method: "POST",
         body: JSON.stringify(form),
       });
+      setError("");
+      setMessage("Availability was added.");
       setShow(false);
       reload();
     } catch (e) {
@@ -861,10 +1031,13 @@ export function AdminAvailability() {
   };
 
   const remove = async (s) => {
+    setMessage("");
     try {
       await request(`/availability/${s._id}`, {
         method: "DELETE",
       });
+      setError("");
+      setMessage("Availability was removed.");
       reload();
     } catch (e) {
       setError(e.message);
@@ -885,6 +1058,11 @@ export function AdminAvailability() {
       />
 
       {error && <div className="alert">{error}</div>}
+      {message && (
+        <div className="success-alert" role="status" aria-live="polite">
+          {message}
+        </div>
+      )}
 
       <div className="panel">
         <DataTable
@@ -927,7 +1105,7 @@ export function AdminAvailability() {
                 !s.booked ? (
                   <button
                     className="icon-btn danger"
-                    onClick={() => remove(s)}
+                    onClick={() => setPendingRemoval(s)}
                     title="Remove availability"
                   >
                     <Trash2 size={17} />
@@ -940,6 +1118,18 @@ export function AdminAvailability() {
           rows={slots}
         />
       </div>
+
+      {pendingRemoval && (
+        <ConfirmDialog
+          message="Are you sure you want to remove this availability?"
+          onCancel={() => setPendingRemoval(null)}
+          onConfirm={() => {
+            const slotToRemove = pendingRemoval;
+            setPendingRemoval(null);
+            remove(slotToRemove);
+          }}
+        />
+      )}
 
       {show && (
         <Modal
@@ -1035,4 +1225,3 @@ export function AdminAvailability() {
     </>
   );
 }
-

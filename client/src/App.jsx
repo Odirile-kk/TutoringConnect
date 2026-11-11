@@ -1,9 +1,65 @@
+import { useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Protected, AppShell } from "./components/AppComponents";
+import { Protected, AppShell, ConfirmDialog } from "./components/AppComponents";
 import { Landing, AuthPage } from "./pages/PublicPages";
 import { StudentDashboard, Subjects, Tutors, TutorProfile, MyBookings, Profile, PlatformRating } from "./pages/StudentPages";
 import { AdminDashboard, AdminUsers, AdminTutors, AdminSubjects, AdminAvailability } from "./pages/AdminPages";
 import { TutorDashboard, TutorAvailability } from "./pages/TutorPages";
+
+export function ToastContainer() {
+  const [toast, setToast] = useState(null);
+  const [confirmation, setConfirmation] = useState(null);
+
+  useEffect(() => {
+    const showNotification = (event) => {
+      if (event.detail.type === "confirm") {
+        setConfirmation(event.detail);
+      } else {
+        setToast(event.detail);
+      }
+    };
+    window.addEventListener("app-toast", showNotification);
+    return () => window.removeEventListener("app-toast", showNotification);
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const timeout = window.setTimeout(() => setToast(null), 3500);
+    return () => window.clearTimeout(timeout);
+  }, [toast]);
+
+  return (
+    <>
+      {toast && (
+        <div
+          className={`toast-notification toast-${toast.type}`}
+          role="status"
+          aria-live="polite"
+        >
+          <p>{toast.message}</p>
+          <button
+            className="toast-dismiss"
+            aria-label="Dismiss notification"
+            onClick={() => setToast(null)}
+          >
+            ×
+          </button>
+        </div>
+      )}
+      {confirmation && (
+        <ConfirmDialog
+          message={confirmation.message}
+          onCancel={() => setConfirmation(null)}
+          onConfirm={() => {
+            const confirmAction = confirmation.onConfirm;
+            setConfirmation(null);
+            confirmAction();
+          }}
+        />
+      )}
+    </>
+  );
+}
 
 export default function App() {
   return (
