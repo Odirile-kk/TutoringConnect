@@ -385,6 +385,48 @@
   font: 800 25px Manrope;
   overflow: hidden;
 }
+.profile-picture-control {
+  position: relative;
+  width: 82px;
+  margin: 0 auto;
+}
+.profile-photo-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+  border: 0;
+}
+.profile-photo-camera {
+  position: absolute;
+  bottom: -5px;
+  left: -5px;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  color: #fff;
+  background: #2858d8;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #20325333;
+}
+.profile-photo-camera:hover {
+  background: #1d46b2;
+}
+.profile-photo-input:focus-visible + .profile-photo-camera {
+  outline: 2px solid #203253;
+  outline-offset: 2px;
+}
+.profile-photo-remove {
+  margin-top: 12px;
+}
 .profile-hero h1 {
   font: 800 27px Manrope;
   letter-spacing: -1px;

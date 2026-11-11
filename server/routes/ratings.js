@@ -4,12 +4,66 @@ import Rating from "../models/Rating.js";
 import { protect, allow } from "../middleware/auth.js";
 
 const r = Router();
-r.use(protect);
 
 const isValidRating = (rating) =>
   Number.isInteger(rating) && rating >= 1 && rating <= 5;
 const isValidComment = (comment) =>
   comment === undefined || (typeof comment === "string" && comment.length <= 1000);
+
+const getPlatformRatingSummary = async () => {
+  const ratingsByRole = await Rating.aggregate([
+    { $match: { type: "platform" } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "author",
+        foreignField: "_id",
+        as: "author",
+      },
+    },
+    { $unwind: "$author" },
+    { $match: { "author.role": { $in: ["student", "tutor"] } } },
+    {
+      $group: {
+        _id: "$author.role",
+        average: { $avg: "$rating" },
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+  const byRole = {
+    student: { average: 0, count: 0 },
+    tutor: { average: 0, count: 0 },
+  };
+
+  for (const roleRating of ratingsByRole) {
+    byRole[roleRating._id] = {
+      average: roleRating.average,
+      count: roleRating.count,
+    };
+  }
+
+  const count = byRole.student.count + byRole.tutor.count;
+  const totalRating =
+    byRole.student.average * byRole.student.count +
+    byRole.tutor.average * byRole.tutor.count;
+
+  return {
+    average: count ? totalRating / count : 0,
+    count,
+    byRole,
+  };
+};
+
+r.get("/platform/public", async (_req, res, next) => {
+  try {
+    res.json(await getPlatformRatingSummary());
+  } catch (error) {
+    next(error);
+  }
+});
+
+r.use(protect);
 
 r.get("/mine", async (req, res) => {
   const [tutorRatings, platformRating] = await Promise.all([
@@ -24,27 +78,20 @@ r.get("/mine", async (req, res) => {
 });
 
 r.get("/platform", async (req, res) => {
-  const [summary] = await Rating.aggregate([
-    { $match: { type: "platform" } },
-    {
-      $group: {
-        _id: null,
-        average: { $avg: "$rating" },
-        count: { $sum: 1 },
-      },
-    },
-  ]);
-  const ownRating = await Rating.findOne({
-    type: "platform",
-    author: req.user._id,
-  })
-    .select("rating comment")
-    .lean();
-  res.json({
-    average: summary?.average || 0,
-    count: summary?.count || 0,
-    ownRating,
-  });
+  try {
+    const [summary, ownRating] = await Promise.all([
+      getPlatformRatingSummary(),
+      Rating.findOne({
+        type: "platform",
+        author: req.user._id,
+      })
+        .select("rating comment")
+        .lean(),
+    ]);
+    res.json({ ...summary, ownRating });
+  } catch (error) {
+    next(error);
+  }
 });
 
 r.post("/platform", allow("student", "tutor"), async (req, res, next) => {

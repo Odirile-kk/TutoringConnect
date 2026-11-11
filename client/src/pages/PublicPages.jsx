@@ -6,6 +6,38 @@ import { Brand, Button } from "../components/AppComponents";
 
 export function Landing() {
   const { user } = useAuth();
+  const [platformRating, setPlatformRating] = useState(null);
+  const [ratingError, setRatingError] = useState("");
+
+  useEffect(() => {
+    request("/ratings/platform/public")
+      .then(setPlatformRating)
+      .catch((error) => setRatingError(error.message));
+  }, []);
+
+  const ratingText = platformRating?.count
+    ? `${platformRating.average.toFixed(1)}/5 · platform rating`
+    : ratingError
+      ? "Rating unavailable"
+      : platformRating
+        ? "Learning made personal"
+        : "Loading platform rating…";
+  const ratingDetails = platformRating?.count
+    ? `From ${platformRating.count} ratings · Students: ${
+        platformRating.byRole.student.count
+          ? `${platformRating.byRole.student.average.toFixed(1)}/5 (${platformRating.byRole.student.count})`
+          : "no ratings"
+      } · Tutors: ${
+        platformRating.byRole.tutor.count
+          ? `${platformRating.byRole.tutor.average.toFixed(1)}/5 (${platformRating.byRole.tutor.count})`
+          : "no ratings"
+      }`
+    : ratingError
+      ? "Could not load the platform rating."
+      : platformRating
+        ? "Be the first student or tutor to rate us."
+        : "Built around your goals and schedule";
+
   return (
     <div className="landing">
       <header className="topbar wrap">
@@ -52,16 +84,18 @@ export function Landing() {
               </a>
             </div>
             <div className="hero-proof">
-              <div className="avatar-stack">
-                <span>AM</span>
-                <span>TK</span>
-                <span>ZN</span>
-              </div>
               <div>
                 <div className="stars">
-                  ★★★★★ <b>Learning made personal</b>
+                  <span aria-hidden="true">
+                    {Array.from({ length: 5 }, (_, index) =>
+                      index < Math.round(platformRating?.average || 0)
+                        ? "★"
+                        : "☆",
+                    ).join("")}
+                  </span>{" "}
+                  <b>{ratingText}</b>
                 </div>
-                <small>Built around your goals and schedule</small>
+                <small>{ratingDetails}</small>
               </div>
             </div>
           </div>

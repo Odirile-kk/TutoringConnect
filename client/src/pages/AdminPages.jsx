@@ -355,7 +355,6 @@ export function AdminTutors() {
     subjects: [],
   });
 
-  // IMPORTANT: use the admin endpoint to retrieve active and inactive tutors.
   const reload = () =>
     request(
       `/tutors/admin/list?search=${encodeURIComponent(q)}`,

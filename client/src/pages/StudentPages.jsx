@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, GraduationCap, Users, CalendarDays, LayoutDashboard, LogOut, Menu, X, ArrowRight, ShieldCheck, Clock, Star, Search, Plus, CheckCircle2, ChevronDown, UserRound, Settings, ChartNoAxesCombined, BookMarked, CalendarCheck, Trash2, Edit3, Filter, Download } from "lucide-react";
+import { BookOpen, GraduationCap, Users, CalendarDays, LayoutDashboard, LogOut, Menu, X, ArrowRight, ShieldCheck, Clock, Star, Search, Plus, CheckCircle2, ChevronDown, UserRound, Settings, ChartNoAxesCombined, BookMarked, CalendarCheck, Trash2, Edit3, Filter, Download, Camera } from "lucide-react";
 import { useAuth, request } from "../context/AuthContext";
 import { Button, PageHead, BookingCard, Empty, RatingForm } from "../components/AppComponents";
 import { jsPDF } from "jspdf";
@@ -70,16 +70,6 @@ export function StudentDashboard() {
         </div>
       )}
       <div className="quick-grid">
-        <Link to="/subjects" className="quick-card">
-          <span className="quick-icon">
-            <BookOpen />
-          </span>
-          <div>
-            <b>Explore subjects</b>
-            <p>Find a subject to focus on.</p>
-          </div>
-          <ArrowRight size={18} />
-        </Link>
         <Link to="/profile" className="quick-card">
           <span className="quick-icon red">
             <UserRound />
@@ -818,12 +808,13 @@ export function PlatformRating() {
 }
 
 export function Profile() {
-  const { user, refresh } = useAuth();
+  const { user, updateUser } = useAuth();
   const [form, setForm] = useState({
     name: user.name || "",
     phone: user.phone || "",
     bio: user.bio || "",
     qualifications: user.qualifications || "",
+    avatar: user.avatar || "",
     subjects: (user.subjects || []).map((subject) =>
       typeof subject === "string" ? subject : subject._id,
     ),
@@ -832,6 +823,50 @@ export function Profile() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const saveAvatar = async (avatar) => {
+    setError("");
+    setMessage("");
+    setBusy(true);
+    try {
+      const { user: updatedUser } = await request("/auth/me/avatar", {
+        method: "PATCH",
+        body: JSON.stringify({ avatar }),
+      });
+      updateUser(updatedUser);
+      setForm((current) => ({ ...current, avatar: updatedUser.avatar || "" }));
+      setMessage(avatar ? "Profile photo updated." : "Profile photo removed.");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const handleAvatarChange = (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Choose a JPEG, PNG or WebP image.");
+      return;
+    }
+    if (file.size > 512 * 1024) {
+      setError("Profile photos must be 512 KB or smaller.");
+      return;
+    }
+
+    setError("");
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        setError("Could not read the selected image.");
+        return;
+      }
+      saveAvatar(reader.result);
+    };
+    reader.onerror = () => setError("Could not read the selected image.");
+    reader.readAsDataURL(file);
+  };
   useEffect(() => {
     if (user.role === "tutor")
       request("/subjects")
@@ -852,8 +887,18 @@ export function Profile() {
     setMessage("");
     setBusy(true);
     try {
-      await request("/auth/me", { method: "PUT", body: JSON.stringify(form) });
-      await refresh();
+      const profile = {
+        name: form.name,
+        phone: form.phone,
+        bio: form.bio,
+        qualifications: form.qualifications,
+      };
+      if (user.role === "tutor") profile.subjects = form.subjects;
+      const { user: updatedUser } = await request("/auth/me", {
+        method: "PUT",
+        body: JSON.stringify(profile),
+      });
+      updateUser(updatedUser);
       setMessage("Your profile has been updated.");
     } catch (e) {
       setError(e.message);
@@ -870,15 +915,35 @@ export function Profile() {
       />
       <div className="profile-layout">
         <div className="profile-summary">
-          <div className="profile-avatar">
-            {user.name.slice(0, 1).toUpperCase()}
+          <div className="profile-picture-control">
+            <div className="profile-avatar">
+              {form.avatar ? (
+                <img src={form.avatar} alt={`${user.name}'s profile`} />
+              ) : (
+                user.name.slice(0, 1).toUpperCase()
+              )}
+            </div>
+            <input
+              className="profile-photo-input"
+              id="profile-photo"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              disabled={busy}
+              onChange={handleAvatarChange}
+            />
+            <label
+              className="profile-photo-camera"
+              htmlFor="profile-photo"
+              aria-label="Change profile photo"
+              title="Change profile photo"
+              aria-disabled={busy}
+            >
+              <Camera size={16} />
+            </label>
           </div>
           <h3>{user.name}</h3>
           <p>{user.email}</p>
           <span className="role-pill">{user.role}</span>
-          <div className="profile-summary-line">
-            <ShieldCheck size={17} /> Account secured
-          </div>
         </div>
         <form className="panel profile-form" onSubmit={save}>
           <h2>Personal information</h2>

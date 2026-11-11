@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 const AuthContext = createContext(null);
 
 export const API =
-  import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+  import.meta.env.VITE_API_URL || "http://localhost:5002/api";
 
 export async function request(path, options = {}) {
   const token = localStorage.getItem("tc_token");
@@ -141,9 +141,14 @@ export function AuthProvider({ children }) {
     return d.user;
   };
 
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem("tc_user", JSON.stringify(updatedUser));
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, refresh }}
+      value={{ user, loading, login, register, logout, refresh, updateUser }}
     >
       {children}
     </AuthContext.Provider>
@@ -151,4 +156,3 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
-

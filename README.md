@@ -1,252 +1,322 @@
 # Tutoring Connect
 
-This project is a full-stack tutoring app built with React on the front end and Node.js/Express with MongoDB on the back end.
+Tutoring Connect is a full-stack tutoring platform that connects students, tutors, and administrators in one app. The project uses a React frontend and a Node.js/Express API backed by MongoDB.
 
-This guide walks you through the full setup on both macOS and Windows so someone else can get the project running from a clean machine.
+This README is focused on running the app on Windows 10/11 and reflects the structure and scripts used in this repository.
+
+---
+
+## Project overview
+
+### Tech stack
+- Frontend: React + Vite
+- Backend: Node.js + Express
+- Database: MongoDB + Mongoose
+- Authentication: JWT + bcrypt
+- Styling/UI: React components and custom CSS
+
+### Core functionality
+- Student and tutor registration/login
+- Tutor profiles and subject listings
+- Subject catalogue and tutor matching
+- Booking management
+- Availability tracking
+- Ratings and feedback
+- Admin dashboard and user management
+
+---
+
+## Requirements
+
+Install these before you start:
+- Windows 10 or Windows 11
+- Git for Windows
+- Node.js LTS (recommended 18+ or 20+)
+- npm (included with Node.js)
+- MongoDB Community Server
+- VS Code (recommended)
 
 ---
 
 ## 1. Install the required software
 
-### Required tools
-- Node.js LTS (18+ or 20+ recommended)
-- npm (comes with Node.js)
-- Git
-- MongoDB Community Server or a MongoDB Atlas account
-- VS Code (recommended)
-
-### macOS
-1. Install Homebrew if you do not already have it:
-   ```bash
-   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-   ```
-
-2. Install Node.js and npm:
-   ```bash
-   brew install node
-   ```
-
-3. Verify the installs:
-   ```bash
-   node -v
-   npm -v
-   ```
-
-4. Install MongoDB Community Edition:
-   ```bash
-   brew tap mongodb/brew
-   brew install mongodb-community@7.0
-   ```
-
-5. Start MongoDB:
-   ```bash
-   brew services start mongodb/brew/mongodb-community
-   ```
-
-6. Check that MongoDB is running:
-   ```bash
-   mongosh
-   ```
-
-### Windows
-1. Install Node.js LTS from:
+### Install Node.js
+1. Download the LTS version from:
    https://nodejs.org/
+2. Run the installer.
+3. Make sure the option to add Node.js to PATH is enabled.
+4. Open a new PowerShell window and verify:
 
-2. During installation, make sure the option to add Node.js to PATH is enabled.
-
-3. Open a new PowerShell or Command Prompt and verify:
-   ```powershell
-   node -v
-   npm -v
-   ```
-
-4. Install MongoDB Community Server from:
-   https://www.mongodb.com/try/download/community
-
-5. Use the default setup wizard and keep the default service settings so MongoDB starts automatically.
-
-6. Verify MongoDB is running:
-   ```powershell
-   mongosh
-   ```
-
-If you do not want to run MongoDB locally, you can use MongoDB Atlas instead. In that case, skip the local MongoDB installation and use your Atlas connection string in the `.env` file.
-
----
-
-## 2. Clone the project
-
-Open a terminal and run:
-
-```bash
-git clone <your-repository-url>
-cd TutoringConnect_Full_Commentated
+```powershell
+node -v
+npm -v
 ```
 
-If you already have the project folder, open it in VS Code and use the integrated terminal.
+If the commands work, Node.js is installed correctly.
+
+### Install Git
+Download and install Git for Windows from:
+https://git-scm.com/download/win
+
+Verify:
+
+```powershell
+git --version
+```
+
+### Install MongoDB Community Server
+1. Download MongoDB Community Server from:
+   https://www.mongodb.com/try/download/community
+2. Run the installer with the default settings.
+3. Make sure the MongoDB service is set to start automatically.
+4. Verify the database shell works:
+
+```powershell
+mongosh
+```
+
+If MongoDB is running correctly, the shell will open without errors.
+
+If MongoDB is not running, open Services and start the MongoDB service, or run:
+
+```powershell
+net start MongoDB
+```
+
+> If you prefer not to run MongoDB locally, you can use MongoDB Atlas instead and replace the local connection string in your environment file.
 
 ---
 
-## 3. Install project dependencies
+## 2. Clone the repository
 
-Open two terminals:
+Open PowerShell in the folder where you want to keep the project and run:
 
-### Terminal 1: server
-```bash
+```powershell
+git clone https://github.com/Odirile-kk/TutoringConnect
+cd TutoringConnect
+```
+
+If the folder name differs, use that folder instead of `TutoringConnect`.
+
+---
+
+## 3. Install dependencies
+
+This project has separate frontend and backend packages, so install dependencies in both folders.
+
+### Backend
+```powershell
 cd server
 npm install
 ```
 
-### Terminal 2: client
-```bash
+### Frontend
+Open a second PowerShell window or return to the project root and run:
+
+```powershell
 cd client
 npm install
 ```
 
-Do not install dependencies in the project root unless the project specifically requires it. This app uses separate dependencies for the client and the server.
+> Do not run `npm install` in the repo root unless you specifically want a root-level package setup. The app is configured to run from `client/` and `server/` separately.
 
 ---
 
-## 4. Set up the environment file
+## 4. Set up environment files
 
-Create a file named `.env` inside the `server` folder by copying `server/.env.example`, then update its values as needed.
+### Backend environment
+Create a file named `.env` inside the `server` folder.
 
 Example content:
 
 ```env
 MONGODB_URI=mongodb://127.0.0.1:27017/tutoring_connect
 PORT=5002
-JWT_SECRET=your-strong-secret-key
+JWT_SECRET=tutorconnectsecret (we are aware that this is a security risk, however its just for the purpose of being able to run our app)
 CLIENT_URL=http://localhost:5174
 ```
 
-### If using MongoDB Atlas
-Use a connection string like this instead:
+### Frontend environment
+Create a file named `.env` inside the `client` folder.
+
+Example content:
 
 ```env
-MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@cluster.mongodb.net/tutoring_connect
+VITE_API_URL=http://localhost:5002/api
+```
+
+### MongoDB Atlas option
+If you are using Atlas instead of local MongoDB, set your connection string like this:
+
+```env
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster-name.mongodb.net/tutoring_connect
 PORT=5002
-JWT_SECRET=your-strong-secret-key
+JWT_SECRET=tutorconnectsecret
 CLIENT_URL=http://localhost:5174
 ```
 
-Important:
-- Replace `USERNAME` and `PASSWORD` with your actual Atlas credentials.
+Important notes:
+- Replace placeholders with your real database credentials.
+- Use a strong random value for `JWT_SECRET`.
 - Keep the database name consistent with the app.
-- Use a secure random value for `JWT_SECRET`.
+- The backend listens on port `5002` by default, and the frontend runs on `5174`.
 
 ---
 
 ## 5. Start the backend
 
-From the project root:
+In PowerShell, run:
 
-```bash
+```powershell
 cd server
 npm run dev
 ```
 
-You should see output showing the server started and MongoDB connected.
+You should see the API start and connect to MongoDB. The backend will listen on:
 
-The API should run on:
-- http://localhost:5002
-
----
-
-## 6. Start the frontend
-
-Open a second terminal and run:
-
-```bash
-cd client
-npm run dev
+```text
+http://localhost:5002
 ```
 
-Then open the app in the browser:
-- http://localhost:5174
-
----
-
-## 7. Common setup checks
-
-### Check if the backend is healthy
-Open this URL in your browser:
+A health check endpoint is also available:
 
 ```text
 http://localhost:5002/api/health
 ```
 
-The response should be JSON indicating the API is running.
+---
 
-### Check if Vite is serving the app
-Open:
+## 6. Start the frontend
+
+Open a second PowerShell window and run:
+
+```powershell
+cd client
+npm run dev
+```
+
+The frontend will start with Vite and open on:
 
 ```text
 http://localhost:5174
 ```
 
-If the page loads, the frontend is running correctly.
+Open that URL in your browser to use the app.
 
 ---
 
-## 8. Make yourself an admin user
+## 7. Optional demo data
 
-After registering a normal account in the app:
+The backend includes a demo data seeding script.
 
-1. Open MongoDB shell:
-   ```bash
-   mongosh
-   ```
+Run this while MongoDB is running:
 
-2. Connect to the database:
-   ```javascript
-   use tutoring_connect
-   ```
+```powershell
+cd server
+npm run seed:demo
+```
 
-3. Update your user to admin:
-   ```javascript
-   db.users.updateOne(
-     { email: "your-email@example.com" },
-     { $set: { role: "admin" } }
-   )
-   ```
-
-This lets you access admin features in the application.
+This adds sample course and application data for testing the application.
 
 ---
 
-## 9. Troubleshooting
+## 8. Common troubleshooting
 
 ### Node or npm is not recognized
-- Restart your terminal after installing Node.js.
-- On macOS, check your PATH if `node` is still not recognized.
-- On Windows, ensure Node.js was added to PATH during installation.
+- Close and reopen PowerShell after installation.
+- Confirm the install path is in your PATH.
+- Run:
+
+```powershell
+where node
+where npm
+```
+
+### MongoDB is not running
+- Check the MongoDB service in Windows Services.
+- Start it manually:
+
+```powershell
+net start MongoDB
+```
+
+- If the shell still fails, verify the installation and service name.
 
 ### MongoDB connection failed
-- Make sure MongoDB is running.
-- Check that the `.env` file contains the correct `MONGODB_URI`.
-- If using Atlas, confirm the username, password, and cluster name are all correct.
+- Check that your `.env` file has the correct `MONGODB_URI`.
+- Ensure MongoDB is running before starting the backend.
+- If using Atlas, verify the username, password, cluster name, and database are all correct.
 
 ### Port already in use
-If port 5002 or 5174 is already occupied, stop the other process or change the port in the app config and environment variables.
+If `5002` or `5174` is already in use, stop the other process or change the port in the relevant environment file and app configuration.
+
+### PowerShell blocks scripts
+If Windows blocks local scripts, open PowerShell with the execution policy temporarily relaxed for the current session:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+```
 
 ---
 
-## 10. Recommended machine setup
+## 9. Recommended Windows setup
 
-For a smooth local development setup, use:
-- macOS or Windows 10/11
-- VS Code with the JavaScript/React extensions
-- Git installed and configured
-- Node.js LTS installed
-- MongoDB running locally or Atlas configured
+For an easier local development setup, use:
+- Windows 10 or Windows 11
+- VS Code with JavaScript/React extensions installed
+- Git for Windows
+- Node.js LTS
+- MongoDB Community Server running locally or MongoDB Atlas configured
 
 ---
 
-## 11. Project structure overview
+## 10. Project structure
 
-- `client/` - React frontend
-- `server/` - Express API and MongoDB logic
-- `README.md` - setup instructions
+```text
+TutoringConnect/
+├── client/                 # React frontend
+│   ├── src/                # App pages, components, context, styles
+│   ├── package.json        # Frontend scripts and dependencies
+│   ├── vite.config.js      # Vite config
+│   └── .env.example        # Frontend environment example
+├── server/                 # Express backend and MongoDB logic
+│   ├── routes/             # API routes
+│   ├── models/             # Mongoose schemas
+│   ├── middleware/         # Auth and request middleware
+│   ├── data/               # Catalog and seed data
+│   ├── index.js            # Server entry point
+│   ├── seedDemo.js         # Demo data script
+│   ├── package.json        # Backend scripts and dependencies
+│   └── .env                # Local environment config
+├── README.md               # Project setup guide
+├── .gitignore              # Git ignore rules
+└── package-lock.json       # Root lock file (not used for app runtime)
+```
 
-The code contains comments explaining how each part of the system is implemented and where the main tutoring features are handled.
+---
+
+## 11. Useful development commands
+
+From the `server` folder:
+```powershell
+npm.cmd run dev
+npm.cmd run start
+npm.cmd run seed:demo
+```
+
+From the `client` folder:
+```powershell
+npm.cmd run dev
+npm.cmd run build
+npm.cmd run preview
+```
+
+---
+
+## 14. Final note
+
+This repo is designed to run as two separate applications in parallel:
+- the backend API on `http://localhost:5002`
+- the frontend app on `http://localhost:5174`
+
+If both are running and MongoDB is connected, the app should work correctly on a Windows machine.

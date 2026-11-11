@@ -106,7 +106,11 @@ export function AppShell({ children, staff = false }) {
           )}
           {user.role === "tutor" && <span className="role-pill">Tutor</span>}
           <div className="user-avatar">
-            {user.name?.slice(0, 1).toUpperCase()}
+            {user.avatar ? (
+              <img src={user.avatar} alt="" />
+            ) : (
+              user.name?.slice(0, 1).toUpperCase()
+            )}
           </div>
           <span className="account-name">{user.name}</span>
           <button
@@ -123,7 +127,6 @@ export function AppShell({ children, staff = false }) {
       </header>
       {isStaff && (
         <aside className={cx("side-nav", open && "side-open")}>
-          <div className="side-label">WORKSPACE</div>
           {links.map(([label, to, Icon]) => (
             <Link
               key={to}
@@ -137,24 +140,6 @@ export function AppShell({ children, staff = false }) {
               {label}
             </Link>
           ))}
-          <div className="side-bottom">
-            <div className="help-card">
-              <span className="help-icon">
-                <Star size={17} />
-              </span>
-              <b>Keep learning</b>
-              <p>Small steps make big progress.</p>
-            </div>
-            <button
-              className="side-link logout-link"
-              onClick={() => {
-                logout();
-                nav("/");
-              }}
-            >
-              <LogOut size={18} /> Sign out
-            </button>
-          </div>
         </aside>
       )}
       {!isStaff && open && (
