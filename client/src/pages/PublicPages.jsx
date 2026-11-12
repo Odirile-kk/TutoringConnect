@@ -247,6 +247,7 @@ export function AuthPage({ mode }) {
     email: "",
     password: "",
     role: "student",
+    studentNumber: "",
     subjects: [],
     qualifications: "",
   });
@@ -275,6 +276,7 @@ export function AuthPage({ mode }) {
               form.email,
               form.password,
               form.role,
+              form.studentNumber,
               form.subjects,
               form.qualifications,
             )
@@ -362,6 +364,20 @@ export function AuthPage({ mode }) {
                   <option value="student">Student</option>
                   <option value="tutor">Tutor</option>
                 </select>
+              </label>
+            )}
+            {mode === "signup" && form.role === "student" && (
+              <label>
+                Student number
+                <input
+                  required
+                  autoComplete="off"
+                  value={form.studentNumber}
+                  onChange={(e) =>
+                    setForm({ ...form, studentNumber: e.target.value })
+                  }
+                  placeholder="Your student number"
+                />
               </label>
             )}
             {mode === "signup" && form.role === "tutor" && (

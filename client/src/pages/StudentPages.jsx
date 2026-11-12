@@ -618,7 +618,9 @@ export function MyBookings() {
               booking={b}
               admin={user.role === "admin"}
               onAction={
-                b.status === "cancelled" || new Date(b.date) < new Date()
+                b.status === "cancelled" ||
+                b.status === "completed" ||
+                new Date(b.date) < new Date()
                   ? null
                   : () => (
                       <div className="booking-actions">
@@ -633,6 +635,18 @@ export function MyBookings() {
                     )
               }
             />
+            {user.role === "tutor" &&
+              b.status === "completed" &&
+              b.tutorRating && (
+                <div className="booking-rating submitted-rating">
+                  <span>
+                    <Star size={15} fill="currentColor" />
+                    Rating from {b.student?.name || "your student"}:{" "}
+                    {b.tutorRating.rating}/5
+                  </span>
+                  {b.tutorRating.comment && <p>{b.tutorRating.comment}</p>}
+                </div>
+              )}
             {user.role === "student" && b.status === "completed" && (
               <div className="booking-rating">
                 {tutorRatings[b._id] ? (
@@ -754,6 +768,7 @@ export function Profile() {
   const { user, updateUser } = useAuth();
   const [form, setForm] = useState({
     name: user.name || "",
+    studentNumber: user.studentNumber || "",
     phone: user.phone || "",
     bio: user.bio || "",
     qualifications: user.qualifications || "",
@@ -906,6 +921,16 @@ export function Profile() {
               Email address
               <input disabled value={user.email} />
             </label>
+            {user.role === "student" && (
+              <label>
+                Student number
+                <input
+                  value={form.studentNumber}
+                  readOnly
+                  placeholder="Not available"
+                />
+              </label>
+            )}
             <label>
               Phone number
               <input

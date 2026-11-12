@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema(
       enum: ["student", "tutor", "admin"],
       default: "student",
     },
+    studentNumber: { type: String, trim: true, unique: true, sparse: true },
     phone: { type: String, default: "" },
     bio: { type: String, default: "" },
     qualifications: { type: String, default: "" },

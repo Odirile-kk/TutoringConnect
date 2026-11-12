@@ -15,6 +15,7 @@ const safeUser = (user) => ({
   name: user.name,
   email: user.email,
   role: user.role,
+  studentNumber: user.studentNumber,
   phone: user.phone,
   bio: user.bio,
   qualifications: user.qualifications,
@@ -59,6 +60,7 @@ router.post("/register", async (req, res, next) => {
       email,
       password,
       role = "student",
+      studentNumber,
       subjects = [],
       qualifications = "",
     } = req.body;
@@ -79,6 +81,15 @@ router.post("/register", async (req, res, next) => {
       return res
         .status(400)
         .json({ message: "Choose either a student or tutor account." });
+    const normalizedStudentNumber =
+      typeof studentNumber === "string" ? studentNumber.trim() : "";
+    if (
+      role === "student" &&
+      (!normalizedStudentNumber || normalizedStudentNumber.length > 50)
+    )
+      return res
+        .status(400)
+        .json({ message: "Enter a valid student number (1-50 characters)." });
     if (!Array.isArray(subjects))
       return res.status(400).json({ message: "Choose valid tutor subjects." });
     let tutorSubjects = [];
@@ -112,17 +123,31 @@ router.post("/register", async (req, res, next) => {
       return res
         .status(409)
         .json({ message: "An account with this email already exists." });
+    if (
+      role === "student" &&
+      (await User.exists({ studentNumber: normalizedStudentNumber }))
+    )
+      return res
+        .status(409)
+        .json({ message: "An account with this student number already exists." });
     const user = await User.create({
       name: name.trim(),
       email,
       password: await bcrypt.hash(password, 12),
       role,
+      ...(role === "student"
+        ? { studentNumber: normalizedStudentNumber }
+        : {}),
       subjects: tutorSubjects,
       qualifications:
         role === "tutor" ? String(qualifications).trim().slice(0, 1000) : "",
     });
     res.status(201).json({ token: tokenFor(user), user: safeUser(user) });
   } catch (e) {
+    if (e.code === 11000 && e.keyPattern?.studentNumber)
+      return res
+        .status(409)
+        .json({ message: "An account with this student number already exists." });
     next(e);
   }
 });

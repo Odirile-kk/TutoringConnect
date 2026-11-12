@@ -1,6 +1,7 @@
 import { Router } from "express";
 import mongoose from "mongoose";
 import Booking from "../models/Booking.js";
+import Rating from "../models/Rating.js";
 import Availability from "../models/Availability.js";
 import { protect, allow } from "../middleware/auth.js";
 const r = Router();
@@ -28,6 +29,28 @@ r.get("/", async (req, res) => {
     .populate("subject", "name")
     .sort({ date: -1 })
     .limit(500);
+  if (req.user.role === "tutor") {
+    const completedBookingIds = b
+      .filter((booking) => booking.status === "completed")
+      .map((booking) => booking._id);
+    const ratings = await Rating.find({
+      type: "tutor",
+      booking: { $in: completedBookingIds },
+    })
+      .select("booking rating comment createdAt")
+      .lean();
+    const ratingsByBooking = new Map(
+      ratings.map((rating) => [String(rating.booking), rating]),
+    );
+    return res.json(
+      b.map((booking) => ({
+        ...booking.toObject(),
+        ...(booking.status === "completed"
+          ? { tutorRating: ratingsByBooking.get(String(booking._id)) || null }
+          : {}),
+      })),
+    );
+  }
   res.json(b);
 });
 r.post("/", allow("student"), async (req, res, next) => {
@@ -86,6 +109,10 @@ r.patch("/:id/cancel", async (req, res, next) => {
       return res
         .status(404)
         .json({ message: "Booking not found or already cancelled." });
+    if (b.status === "completed")
+      return res
+        .status(400)
+        .json({ message: "Completed sessions cannot be cancelled." });
     if (new Date(b.date) <= new Date())
       return res
         .status(400)

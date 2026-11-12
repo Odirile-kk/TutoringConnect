@@ -104,6 +104,7 @@ export function AuthProvider({ children }) {
     email,
     password,
     role,
+    studentNumber,
     subjects,
     qualifications
   ) => {
@@ -114,6 +115,7 @@ export function AuthProvider({ children }) {
         email,
         password,
         role,
+        studentNumber,
         subjects,
         qualifications,
       }),
